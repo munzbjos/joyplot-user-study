@@ -1,0 +1,105 @@
+name: joyplot-user-study
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - database
+    security_opt:
+      - no-new-privileges:true
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+      ADMIN_SECRET: ${ADMIN_SECRET:?Set ADMIN_SECRET in .env}
+      TOKEN_PEPPER: ${TOKEN_PEPPER:?Set TOKEN_PEPPER in .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - database
+      - web
+    init: true
+    security_opt:
+      - no-new-privileges:true
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/Caddy.Dockerfile
+      args:
+        VITE_MIN_VIEWPORT_WIDTH: ${VITE_MIN_VIEWPORT_WIDTH:-1100}
+        VITE_MIN_PARTICIPANT_AGE: ${VITE_MIN_PARTICIPANT_AGE:-1}
+        VITE_RESEARCH_INSTITUTION: ${VITE_RESEARCH_INSTITUTION:-[Research institution]}
+        VITE_INVESTIGATOR: ${VITE_INVESTIGATOR:-[Investigator]}
+        VITE_EXPECTED_DURATION: ${VITE_EXPECTED_DURATION:-[Expected duration]}
+        VITE_DATA_HANDLING: ${VITE_DATA_HANDLING:-[Anonymity and data handling information]}
+        VITE_WITHDRAWAL_INFO: ${VITE_WITHDRAWAL_INFO:-[Withdrawal information]}
+        VITE_ETHICS_CONTACT: ${VITE_ETHICS_CONTACT:-[Ethics and contact information]}
+        VITE_FINAL_TEXT: ${VITE_FINAL_TEXT:-Your responses have been recorded.}
+        VITE_TRAINING_JOY_ASSET: ${VITE_TRAINING_JOY_ASSET:-}
+        VITE_TRAINING_CH_ASSET: ${VITE_TRAINING_CH_ASSET:-}
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-http://localhost}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_logs:/var/log/caddy
+    networks:
+      - web
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://api:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  database:
+    internal: true
+  web:
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+  caddy_logs:
