@@ -1,4 +1,6 @@
-import csv, io
+import csv, io, json
+from collections import Counter
+from pathlib import Path
 from .conftest import new_ready
 
 async def test_session_token_is_recoverable_but_not_returned_in_state(client):
@@ -48,3 +50,54 @@ async def test_metric_consistency_validation(client):
     _,h=await new_ready(client); await client.post("/api/session/start",headers=h)
     bad={"selected_answer":"region_1","rt_selection_ms":300,"rt_submit_ms":200,"answer_changes":0,"zoom_used":False,"zoom_count":1,"trial_restarted":False,"restart_count":0}
     assert (await client.post("/api/trials/1/response",headers=h,json=bad)).status_code==422
+
+
+async def test_complete_six_version_simulation_and_export(client):
+    config_dir = Path(__file__).parents[2] / "config"
+    answers = json.loads(
+        (config_dir / "answer_key.server.json").read_text(encoding="utf-8")
+    )["answers"]
+    assigned_versions = []
+
+    for participant_index in range(6):
+        created, headers = await new_ready(client)
+        started = (await client.post("/api/session/start", headers=headers)).json()
+        assigned_versions.append(started["assigned_version"])
+        assert len(started["trials"]) == 6
+
+        for trial in started["trials"]:
+            answer = answers[trial["task_id"]]
+            assert answer in {option["id"] for option in trial["options"]}
+            payload = {
+                "selected_answer": answer,
+                "rt_selection_ms": 100 + participant_index,
+                "rt_submit_ms": 200 + participant_index,
+                "answer_changes": 0,
+                "zoom_used": False,
+                "zoom_count": 0,
+                "trial_restarted": False,
+                "restart_count": 0,
+            }
+            response = await client.post(
+                f"/api/trials/{trial['position']}/response",
+                headers=headers,
+                json=payload,
+            )
+            assert response.status_code == 200
+
+        await client.post(
+            "/api/session/preference",
+            headers=headers,
+            json={"preference": "no_preference"},
+        )
+        assert (await client.post("/api/session/complete", headers=headers)).status_code == 200
+
+    assert set(assigned_versions) == {f"V{i}" for i in range(1, 7)}
+    exported = await client.get(
+        "/api/admin/export.csv", headers={"X-Admin-Secret": "admin-test-secret"}
+    )
+    rows = list(csv.DictReader(io.StringIO(exported.text)))
+    simulated = [row for row in rows if row["assigned_version"] in assigned_versions]
+    assert len(simulated) >= 36
+    assert all(row["is_correct"] == "True" for row in simulated)
+    assert Counter(row["method"] for row in simulated) == Counter({"J": 18, "CH": 18})
