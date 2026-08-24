@@ -1,1 +1,0 @@
-# joyplot-user-study

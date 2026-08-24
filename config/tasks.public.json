@@ -1,0 +1,337 @@
+{
+  "schema_version": 1,
+  "language": "en",
+  "asset_base_path": "/stimuli/",
+  "methods": {
+    "J": "Joy plot",
+    "CH": "Bivariate choropleth"
+  },
+  "option_sets": {
+    "regions": [
+      {
+        "id": "region_1",
+        "label": "Region 1"
+      },
+      {
+        "id": "region_2",
+        "label": "Region 2"
+      },
+      {
+        "id": "region_3",
+        "label": "Region 3"
+      },
+      {
+        "id": "region_4",
+        "label": "Region 4"
+      }
+    ],
+    "relationship": [
+      {
+        "id": "positive",
+        "label": "Predominantly positive relationship"
+      },
+      {
+        "id": "negative",
+        "label": "Predominantly negative relationship"
+      },
+      {
+        "id": "local_anomaly",
+        "label": "Similar overall pattern with a local anomaly"
+      },
+      {
+        "id": "no_clear_relationship",
+        "label": "No clear spatial relationship"
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "T1a01",
+      "family": "T1",
+      "subfamily": "T1a",
+      "task_type": "local_comparison",
+      "geography": "CZ",
+      "pair": "P1",
+      "target_pattern": "Highest Variable A",
+      "question": "Which of the four marked locations has the highest value of Variable A?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T1a01_CZP1_J.png",
+        "CH": "T1a01_CZP1_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T1a02",
+      "family": "T1",
+      "subfamily": "T1a",
+      "task_type": "local_comparison",
+      "geography": "FR",
+      "pair": "P2",
+      "target_pattern": "Highest Variable B",
+      "question": "Which of the four marked locations has the highest value of Variable B?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T1a02_FRP2_J.png",
+        "CH": "T1a02_FRP2_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T1a03",
+      "family": "T1",
+      "subfamily": "T1a",
+      "task_type": "local_comparison",
+      "geography": "CZ",
+      "pair": "P2",
+      "target_pattern": "Lowest Variable A",
+      "question": "Which of the four marked locations has the lowest value of Variable A?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T1a03_CZP2_J.png",
+        "CH": "T1a03_CZP2_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T1b01",
+      "family": "T1",
+      "subfamily": "T1b",
+      "task_type": "categorical_local_lookup",
+      "geography": "FR",
+      "pair": "P3",
+      "target_pattern": "Low Variable B",
+      "question": "Which marked location shows a low value of Variable B?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T1b01_FRP3_J.png",
+        "CH": "T1b01_FRP3_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T1b02",
+      "family": "T1",
+      "subfamily": "T1b",
+      "task_type": "categorical_local_lookup",
+      "geography": "CZ",
+      "pair": "P3",
+      "target_pattern": "High Variable B",
+      "question": "Which marked location shows a high value of Variable B?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T1b02_CZP3_J.png",
+        "CH": "T1b02_CZP3_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T1b03",
+      "family": "T1",
+      "subfamily": "T1b",
+      "task_type": "categorical_local_lookup",
+      "geography": "FR",
+      "pair": "P1",
+      "target_pattern": "Low Variable A",
+      "question": "Which marked location shows a low value of Variable A?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T1b03_FRP1_J.png",
+        "CH": "T1b03_FRP1_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T2a01",
+      "family": "T2",
+      "subfamily": "T2a",
+      "task_type": "bivariate_categorical_lookup",
+      "geography": "FR",
+      "pair": "P1",
+      "target_pattern": "High A + High B",
+      "question": "Which marked location shows high values of both Variable A and Variable B?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T2a01_FRP1_J.png",
+        "CH": "T2a01_FRP1_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T2a02",
+      "family": "T2",
+      "subfamily": "T2a",
+      "task_type": "bivariate_categorical_lookup",
+      "geography": "CZ",
+      "pair": "P2",
+      "target_pattern": "High A + Low B",
+      "question": "Which marked location shows a high value of Variable A and a low value of Variable B?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T2a02_CZP2_J.png",
+        "CH": "T2a02_CZP2_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T2a03",
+      "family": "T2",
+      "subfamily": "T2a",
+      "task_type": "bivariate_categorical_lookup",
+      "geography": "CZ",
+      "pair": "P1",
+      "target_pattern": "Low A + Low B",
+      "question": "Which marked location shows low values of both Variable A and Variable B?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T2a03_CZP1_J.png",
+        "CH": "T2a03_CZP1_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T2a04",
+      "family": "T2",
+      "subfamily": "T2a",
+      "task_type": "bivariate_categorical_lookup",
+      "geography": "FR",
+      "pair": "P3",
+      "target_pattern": "Low A + High B",
+      "question": "Which marked location shows a low value of Variable A and a high value of Variable B?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T2a04_FRP3_J.png",
+        "CH": "T2a04_FRP3_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T2a05",
+      "family": "T2",
+      "subfamily": "T2a",
+      "task_type": "bivariate_categorical_lookup",
+      "geography": "CZ",
+      "pair": "P3",
+      "target_pattern": "High A + High B",
+      "question": "Which marked location shows high values of both Variable A and Variable B?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T2a05_CZP3_J.png",
+        "CH": "T2a05_CZP3_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T2a06",
+      "family": "T2",
+      "subfamily": "T2a",
+      "task_type": "bivariate_categorical_lookup",
+      "geography": "FR",
+      "pair": "P2",
+      "target_pattern": "Low A + High B",
+      "question": "Which marked location shows a low value of Variable A and a high value of Variable B?",
+      "option_set_id": "regions",
+      "assets": {
+        "J": "T2a06_FRP2_J.png",
+        "CH": "T2a06_FRP2_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T3a01",
+      "family": "T3",
+      "subfamily": "T3a",
+      "task_type": "overall_spatial_relationship",
+      "geography": "CZ",
+      "pair": "P1",
+      "target_pattern": "Predominantly positive relationship",
+      "question": "Which description best characterises the overall spatial relationship between Variable A and Variable B?",
+      "option_set_id": "relationship",
+      "assets": {
+        "J": "T3a01_CZP1_J.png",
+        "CH": "T3a01_CZP1_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T3a02",
+      "family": "T3",
+      "subfamily": "T3a",
+      "task_type": "overall_spatial_relationship",
+      "geography": "CZ",
+      "pair": "P2",
+      "target_pattern": "Predominantly negative relationship",
+      "question": "Which description best characterises the overall spatial relationship between Variable A and Variable B?",
+      "option_set_id": "relationship",
+      "assets": {
+        "J": "T3a02_CZP2_J.png",
+        "CH": "T3a02_CZP2_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T3a03",
+      "family": "T3",
+      "subfamily": "T3a",
+      "task_type": "overall_spatial_relationship",
+      "geography": "CZ",
+      "pair": "P3",
+      "target_pattern": "Similar overall pattern with a local anomaly",
+      "question": "Which description best characterises the overall spatial relationship between Variable A and Variable B?",
+      "option_set_id": "relationship",
+      "assets": {
+        "J": "T3a03_CZP3_J.png",
+        "CH": "T3a03_CZP3_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T3a04",
+      "family": "T3",
+      "subfamily": "T3a",
+      "task_type": "overall_spatial_relationship",
+      "geography": "FR",
+      "pair": "P1",
+      "target_pattern": "Predominantly positive relationship",
+      "question": "Which description best characterises the overall spatial relationship between Variable A and Variable B?",
+      "option_set_id": "relationship",
+      "assets": {
+        "J": "T3a04_FRP1_J.png",
+        "CH": "T3a04_FRP1_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T3a05",
+      "family": "T3",
+      "subfamily": "T3a",
+      "task_type": "overall_spatial_relationship",
+      "geography": "FR",
+      "pair": "P2",
+      "target_pattern": "Predominantly negative relationship",
+      "question": "Which description best characterises the overall spatial relationship between Variable A and Variable B?",
+      "option_set_id": "relationship",
+      "assets": {
+        "J": "T3a05_FRP2_J.png",
+        "CH": "T3a05_FRP2_CH.png"
+      },
+      "status": "locked"
+    },
+    {
+      "id": "T3a06",
+      "family": "T3",
+      "subfamily": "T3a",
+      "task_type": "overall_spatial_relationship",
+      "geography": "FR",
+      "pair": "P3",
+      "target_pattern": "Similar overall pattern with a local anomaly",
+      "question": "Which description best characterises the overall spatial relationship between Variable A and Variable B?",
+      "option_set_id": "relationship",
+      "assets": {
+        "J": "T3a06_FRP3_J.png",
+        "CH": "T3a06_FRP3_CH.png"
+      },
+      "status": "locked"
+    }
+  ]
+}

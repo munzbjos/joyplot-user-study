@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "server_only": true,
+  "answers": {
+    "T1a01": "region_1",
+    "T1a02": "region_3",
+    "T1a03": "region_2",
+    "T1b01": "region_4",
+    "T1b02": "region_2",
+    "T1b03": "region_4",
+    "T2a01": "region_3",
+    "T2a02": "region_2",
+    "T2a03": "region_1",
+    "T2a04": "region_1",
+    "T2a05": "region_3",
+    "T2a06": "region_4",
+    "T3a01": "positive",
+    "T3a02": "negative",
+    "T3a03": "local_anomaly",
+    "T3a04": "positive",
+    "T3a05": "negative",
+    "T3a06": "local_anomaly"
+  }
+}
