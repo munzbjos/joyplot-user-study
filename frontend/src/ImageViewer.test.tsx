@@ -42,6 +42,23 @@ describe('ImageViewer', () => {
     expect(gesture).not.toHaveBeenCalled()
   })
 
+  it('cancels wheel scrolling only inside the viewer', () => {
+    render(<><ImageViewer src="/map.png" alt="Map" /><div data-testid="outside" /></>)
+    const inside = new WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true })
+    screen.getByRole('img').parentElement!.dispatchEvent(inside)
+    expect(inside.defaultPrevented).toBe(true)
+    const outside = new WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true })
+    screen.getByTestId('outside').dispatchEvent(outside)
+    expect(outside.defaultPrevented).toBe(false)
+  })
+
+  it('applies the measured fixed frame crop only when explicitly requested', () => {
+    const { rerender } = render(<ImageViewer src="/map.png" alt="Map" />)
+    expect(screen.getByRole('img').parentElement).not.toHaveClass('crop-choropleth-frame')
+    rerender(<ImageViewer src="/map.png" alt="Map" cropChoroplethFrame />)
+    expect(screen.getByRole('img').parentElement).toHaveClass('crop-choropleth-frame')
+  })
+
   it.each([
     ['/training/T0a01_J.png', 'T0 Joy'],
     ['/training/T0a01_CH.png', 'T0 Choropleth'],

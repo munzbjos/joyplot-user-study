@@ -11,7 +11,7 @@ export const participantCopy = {
     consent: 'I confirm that I am at least 18 years old, that I have read the information above, and that I voluntarily agree to participate in this study.',
   },
   training: [
-    { method: 'J' as const, header: 'Practice 1 of 2 — Joy Plot', assetUrl: '/training/T0a01_J.png', question: 'At which marked region is Variable B higher than Variable A?', correctAnswer: 'region_3', correctLabel: 'Region 3', next: 'Next Practice Question' },
-    { method: 'CH' as const, header: 'Practice 2 of 2 — Bivariate Choropleth Map', assetUrl: '/training/T0a01_CH.png', question: 'Which marked region shows a low value of Variable A and a high value of Variable B?', correctAnswer: 'region_2', correctLabel: 'Region 2', next: 'Continue' },
+    { method: 'J' as const, headingPrefix: 'Practice 1 of 2:', methodLabel: 'Bivariate Joy Plot', assetUrl: '/training/T0a01_J.png', question: 'At which marked region is Variable B higher than Variable A?', correctAnswer: 'region_3', correctLabel: 'Region 3', next: 'Next Practice Question' },
+    { method: 'CH' as const, headingPrefix: 'Practice 2 of 2:', methodLabel: 'Bivariate Choropleth Map', assetUrl: '/training/T0a01_CH.png', question: 'Which marked region shows a low value of Variable A and a high value of Variable B?', correctAnswer: 'region_2', correctLabel: 'Region 2', next: 'Continue' },
   ],
 }

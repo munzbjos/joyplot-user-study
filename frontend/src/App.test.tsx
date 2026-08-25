@@ -63,4 +63,15 @@ describe('versioned consent flow', () => {
     expect(api.createSession).not.toHaveBeenCalled()
     await waitFor(() => expect(api.recoverSession).toHaveBeenCalledWith('existing-token'))
   })
+
+  it('shows the approved accessible researcher links after completion', async () => {
+    storage.setSessionToken('completed-token')
+    vi.mocked(api.recoverSession).mockResolvedValue({ session_token: 'completed-token', status: 'completed', completed_trials: 6 })
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: 'Thank You!' })).toBeInTheDocument()
+    expect(screen.queryByText(/OPTIONAL FINAL CONTACT/)).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Josef Münzberger on LinkedIn' })).toHaveAttribute('href', 'https://www.linkedin.com/in/josef-m%C3%BCnzberger-a71a29204/')
+    expect(screen.getByRole('link', { name: 'Email Josef Münzberger' })).toHaveAttribute('href', 'mailto:josef.munzberger@fsv.cvut.cz')
+    expect(screen.getByRole('link', { name: 'Bivariate Joy Plot article' })).toHaveAttribute('href', 'https://doi.org/10.1080/00087041.2026.2715285')
+  })
 })
