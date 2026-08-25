@@ -33,6 +33,12 @@ legend { font-weight: 700; margin-bottom: .75rem; }
 .legend-demo i { width: 35px; height: 35px; background: #d9e7dc; border: 1px solid white; }
 .legend-demo i:nth-child(2n) { background: #9dbca9; }.legend-demo i:nth-child(3n) { background: #547c72; }
 .training-image { display: block; max-width: 100%; max-height: 54vh; object-fit: contain; margin: 1.5rem auto; }
+.image-viewer { width: 100%; height: min(55vh, 620px); margin: 1.5rem 0; display: grid; place-items: center; overflow: hidden; background: #f7f8f6; border: 1px solid #e2e6e3; user-select: none; touch-action: none; cursor: default; }
+.image-viewer.zoomed { cursor: grab; }
+.image-viewer.zoomed:active { cursor: grabbing; }
+.image-viewer img { display: block; width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center; will-change: transform; pointer-events: none; }
+.measured-viewer { height: min(49vh, 520px); margin: 0 0 1rem; }
+.instruction-viewer, .practice-viewer { height: min(54vh, 600px); }
 .countdown { height: 55vh; display: grid; place-items: center; }
 .countdown span { font-size: 8rem; font-variant-numeric: tabular-nums; }
 .trial header { display: flex; justify-content: space-between; align-items: center; }

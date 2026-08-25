@@ -3,9 +3,8 @@
 export const participantCopy = {
   consentVersion: '1.0',
   welcome: {
-    title: 'Visualisation of Spatial Data — User Study',
+    title: 'Visualisation of Spatial Data: User\u00a0Study',
     introduction: [
-      'Thank you for taking part in this study.',
       'This research investigates how people interpret different visualisations of spatial data. You will first receive brief instructions and complete two practice tasks. You will then answer six map-reading questions.',
       'The study takes approximately 5–10 minutes and should be completed on a desktop or laptop computer.',
     ],
