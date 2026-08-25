@@ -30,23 +30,23 @@ describe('versioned consent flow', () => {
     vi.mocked(api.recordConsent).mockReturnValue(new Promise(resolve => { acknowledge = resolve }))
     render(<App />)
     const user = userEvent.setup()
-    await screen.findByRole('heading', { name: /spatial data visualisation study/i })
+    await screen.findByRole('heading', { name: /visualisation of spatial data — user study/i })
     await user.click(screen.getByRole('checkbox'))
     await user.click(screen.getByRole('button', { name: 'Continue' }))
     expect(screen.getByRole('button', { name: 'Saving consent…' })).toBeDisabled()
-    expect(screen.queryByRole('heading', { name: 'Participant information' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'About You' })).not.toBeInTheDocument()
 
     acknowledge({ ...created, status: 'consent_recorded', consent_recorded: true })
-    expect(await screen.findByRole('heading', { name: 'Participant information' })).toBeInTheDocument()
-    expect(screen.getByLabelText('What is your age?')).toHaveAttribute('min', '18')
-    expect(api.recordConsent).toHaveBeenCalledWith('session-token', 'draft-v1')
+    expect(await screen.findByRole('heading', { name: 'About You' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Age')).toHaveAttribute('min', '18')
+    expect(api.recordConsent).toHaveBeenCalledWith('session-token', '1.0')
   })
 
   it('recovers a recorded consent directly at demographics', async () => {
     storage.setSessionToken('existing-token')
     vi.mocked(api.recoverSession).mockResolvedValue({ ...created, session_token: 'existing-token', status: 'consent_recorded', consent_recorded: true })
     render(<App />)
-    expect(await screen.findByRole('heading', { name: 'Participant information' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'About You' })).toBeInTheDocument()
   })
 
   it('keeps the session token on a transient recovery error', async () => {

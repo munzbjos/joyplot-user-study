@@ -2,7 +2,7 @@ FROM node:22-alpine AS frontend-build
 WORKDIR /app
 ARG VITE_MIN_VIEWPORT_WIDTH=1100
 ARG VITE_MIN_PARTICIPANT_AGE=18
-ARG VITE_CONSENT_TEXT_VERSION=draft-v1
+ARG VITE_CONSENT_TEXT_VERSION=1.0
 ARG VITE_RESEARCH_INSTITUTION="[Research institution]"
 ARG VITE_INVESTIGATOR="[Investigator]"
 ARG VITE_EXPECTED_DURATION="[Expected duration]"
@@ -33,3 +33,4 @@ FROM caddy:2.10-alpine
 COPY deploy/Caddyfile /etc/caddy/Caddyfile
 COPY --from=frontend-build /app/dist /srv
 COPY stimuli/ /srv/stimuli/
+COPY training/ /srv/training/

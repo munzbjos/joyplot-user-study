@@ -1,17 +1,18 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { api, ApiError } from './api'
 import { uiConfig } from './config'
+import { participantCopy } from './participantCopy'
 import { storage } from './storage'
 import { afterVisiblePaint, preloadAndDecode } from './timing'
 import type { ParticipantInformation, SafeTrial, StudySession, TrialMetrics } from './types'
 
-type View = 'loading' | 'welcome' | 'demographics' | 'instructions' | 'training' | 'ready' |
+type View = 'loading' | 'welcome' | 'demographics' | 'instructions-intro' | 'instructions-joy' | 'instructions-ch' | 'practice-intro' | 'training' | 'ready' |
   'preloading' | 'countdown' | 'trial' | 'preference' | 'thank-you' | 'resume' | 'error'
 
 function initialView(session: StudySession): View {
   if (session.status === 'completed') return 'thank-you'
   if (session.assigned_version || session.status === 'in_progress' || session.status === 'preference_recorded') return 'resume'
-  if (session.participant_information_complete || session.status === 'ready') return 'instructions'
+  if (session.participant_information_complete || session.status === 'ready') return 'instructions-intro'
   if (session.consent_recorded || session.status === 'consent_recorded') return 'demographics'
   return 'welcome'
 }
@@ -128,10 +129,13 @@ export function App() {
     }} />}
     {view === 'demographics' && <Demographics onSave={async information => {
       const updated = await api.saveParticipantInformation(session!.session_token, information)
-      setSession(updated); setView('instructions')
+      setSession(updated); setView('instructions-intro')
     }} />}
-    {view === 'instructions' && <Instructions onContinue={() => { setTrainingIndex(0); setView('training') }} />}
-    {view === 'training' && <Training index={trainingIndex} onContinue={() => {
+    {view === 'instructions-intro' && <InstructionsIntro onContinue={() => setView('instructions-joy')} />}
+    {view === 'instructions-joy' && <JoyInstructions onContinue={() => setView('instructions-ch')} />}
+    {view === 'instructions-ch' && <ChoroplethInstructions onContinue={() => setView('practice-intro')} />}
+    {view === 'practice-intro' && <PracticeIntro onContinue={() => { setTrainingIndex(0); setView('training') }} />}
+    {view === 'training' && <Training key={trainingIndex} index={trainingIndex} onContinue={() => {
       if (trainingIndex === uiConfig.training.length - 1) setView('ready')
       else setTrainingIndex(value => value + 1)
     }} />}
@@ -152,7 +156,7 @@ export function App() {
       const completed = await api.complete(session.session_token)
       setSession({ ...saved, ...completed }); setView('thank-you')
     }} />}
-    {view === 'thank-you' && <Status title="Thank you" text={uiConfig.finalText} />}
+    {view === 'thank-you' && <section className="status"><h1>Thank You</h1><p>Thank you for taking part in this study.</p><p>Your responses have been recorded successfully.</p><p><strong>[OPTIONAL FINAL CONTACT / RESEARCH INFORMATION TO BE CONFIRMED]</strong></p></section>}
     {view === 'resume' && session && <Resume session={session}
       onResume={() => void (async () => {
         try {
@@ -179,11 +183,15 @@ export function Welcome({ onContinue }: { onContinue: () => Promise<void> }) {
     try { await onContinue() }
     catch { setError('Your consent could not be recorded. Please check your connection and retry.'); setSaving(false) }
   }
-  return <section><p className="eyebrow">{uiConfig.institution}</p><h1>Spatial data visualisation study</h1>
-    <p className="lead">This study investigates how people interpret different visualisations of spatial data.</p>
-    <dl className="facts"><div><dt>Investigator</dt><dd>{uiConfig.investigator}</dd></div><div><dt>Expected duration</dt><dd>{uiConfig.expectedDuration}</dd></div></dl>
-    <div className="notice"><p>Participation is voluntary.</p><p>{uiConfig.dataHandling}</p><p>{uiConfig.withdrawal}</p><p>{uiConfig.ethicsContact}</p></div>
-    <label className="consent"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} /> I have read the information above and consent to participate.</label>
+  return <section><h1>{participantCopy.welcome.title}</h1>
+    {participantCopy.welcome.introduction.map((text, index) => <p className={index === 0 ? 'lead' : undefined} key={text}>{text}</p>)}
+    <h2>Participation requirements</h2><ul><li>You must be <strong>18 years of age or older</strong>.</li><li>Please complete the study on a <strong>desktop or laptop computer</strong>.</li><li>Please complete the study in one sitting if possible.</li></ul>
+    <h2>Participation and data</h2><p>Participation is voluntary. You may stop the study at any time by closing the browser window.</p><p>We do not ask for your name, email address, or other directly identifying information. The study records your responses, response times, basic demographic information provided in the questionnaire, and limited technical information about the device and browser used to complete the study.</p><p>The collected data will be used for academic research and may be reported in aggregated or anonymised form in scientific publications and related research outputs.</p>
+    <h2>What data will be collected?</h2><p>The study records:</p><ul><li>your age, gender category and whether you have a background in cartography or GIS;</li><li>your answers to the six experimental questions;</li><li>response times and basic interactions with the visualisations, such as use of image zoom;</li><li>your final preference between the two visualisation methods;</li><li>basic technical information such as browser type, screen size and viewport size.</li></ul><p>These technical data are collected only to assess the quality and comparability of the experimental responses.</p>
+    <h2>Risks and benefits</h2><p>No risks beyond those normally associated with using a computer are expected. There is no direct personal benefit from participating, but your responses will contribute to research on cartographic visualisation and map design.</p>
+    <h2>Research contact</h2><p>This study is conducted by <strong>Josef Münzberger</strong>, <strong>CTU Prague</strong>.</p><p>If you have questions about the study, please contact:</p><p><strong>josef.munzberger@fsv.cvut.cz</strong></p>
+    <h2>Ethics / data protection information</h2><p><strong>[TO BE CONFIRMED — insert institutional ethics approval/reference or other required CTU data-protection information if applicable.]</strong></p>
+    <h2>Consent</h2><label className="consent"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} /> <strong>{participantCopy.welcome.consent}</strong></label>
     {error && <p className="error" role="alert">{error}</p>}
     <button disabled={!consent || saving} onClick={() => void continueAfterConsent()}>{saving ? 'Saving consent…' : 'Continue'}</button>
   </section>
@@ -203,8 +211,8 @@ function Demographics({ onSave }: { onSave: (value: ParticipantInformation) => P
     try { await onSave({ age: parsed, gender, cartographic_background: background }) }
     catch { setError('Your information could not be saved. Please retry.'); setSaving(false) }
   }
-  return <section><h1>Participant information</h1><form onSubmit={submit}>
-    <label>What is your age?<input inputMode="numeric" type="number" min={uiConfig.minimumParticipantAge} max="120" value={age} onChange={e => setAge(e.target.value)} required /></label>
+  return <section><h1>About You</h1><p>Before we begin, please answer three short questions about yourself.</p><form onSubmit={submit}>
+    <label>What is your age?<input aria-label="Age" placeholder="Age" inputMode="numeric" type="number" min={uiConfig.minimumParticipantAge} max="120" value={age} onChange={e => setAge(e.target.value)} required /></label>
     <fieldset><legend>How do you describe your gender?</legend>{[
       ['man','Man'], ['woman','Woman'], ['another_gender','Another gender'], ['prefer_not_to_say','Prefer not to say'],
     ].map(([value,label]) => <label className="choice" key={value}><input type="radio" name="gender" value={value} checked={gender === value} onChange={() => setGender(value as ParticipantInformation['gender'])} />{label}</label>)}</fieldset>
@@ -215,25 +223,26 @@ function Demographics({ onSave }: { onSave: (value: ParticipantInformation) => P
   </form></section>
 }
 
-function Instructions({ onContinue }: { onContinue: () => void }) {
-  return <section><h1>How to read the visualisations</h1><div className="method-grid">
-    <article><h2>Joy plot</h2><p><strong>Higher ridge = higher value.</strong></p><p>Variable A and Variable B are represented by their respective ridges. Compare ridge heights at the same location to interpret their values.</p></article>
-    <article><h2>Bivariate choropleth</h2><div className="legend-demo" aria-label="Illustrative three by three bivariate legend"><span>High B</span><div>{Array.from({length: 9}, (_, i) => <i key={i} />)}</div><span>Low A → High A</span><span>Low B</span></div><p>The 3×3 legend combines classes of Variable A and Variable B. Read each axis from Low to High and match the map colour to the corresponding cell.</p></article>
-  </div><button onClick={onContinue}>Continue to training</button></section>
-}
+function InstructionsIntro({ onContinue }: { onContinue: () => void }) { return <section><h1>How to Read the Visualisations</h1><p>In this study, you will work with two different methods for visualising two spatial variables: <strong>Variable A</strong> and <strong>Variable B</strong>.</p><p>The following screens briefly explain how to read each visualisation. You will then complete two practice questions before starting the measured part of the study.</p><button onClick={onContinue}>Continue</button></section> }
 
-function Training({ index, onContinue }: { index: number; onContinue: () => void }) {
+function JoyInstructions({ onContinue }: { onContinue: () => void }) { return <section><h1>Joy Plot</h1><p>A joy plot represents spatial values using a series of profiles.</p><p><strong>Variable A</strong> and <strong>Variable B</strong> are shown as two overlaid sets of ridges.</p><p>The <strong>height of a ridge represents the value of the variable at that location:</strong></p><p><strong>Higher ridge = higher value.</strong></p><p>To compare values, look at the relative heights of the corresponding ridges at the location of interest.</p><p><strong>Variable A — blue</strong><br /><strong>Variable B — red</strong></p><button onClick={onContinue}>Continue</button></section> }
+
+function ChoroplethInstructions({ onContinue }: { onContinue: () => void }) { return <section><h1>Bivariate Choropleth Map</h1><p>A bivariate choropleth map represents <strong>Variable A</strong> and <strong>Variable B</strong> simultaneously using colour.</p><p>Each map cell belongs to one of nine colour classes representing a combination of values of the two variables.</p><p>Use the <strong>3 × 3 legend</strong> to interpret the colour of a cell:</p><ul><li>one direction of the legend represents <strong>Variable A</strong>, from low to high;</li><li>the other direction represents <strong>Variable B</strong>, from low to high.</li></ul><p>To identify the values at a location, match the colour of the corresponding map cell to the legend.</p><button onClick={onContinue}>Continue</button></section> }
+
+function PracticeIntro({ onContinue }: { onContinue: () => void }) { return <section><h1>Practice</h1><p>You will now complete two practice questions:</p><ul><li>one using a <strong>joy plot</strong>;</li><li>one using a <strong>bivariate choropleth map</strong>.</li></ul><p>These practice questions are <strong>not part of the measured test</strong>, and your response time will not be analysed.</p><p>After submitting each answer, you will see the correct response.</p><p>The numbered circles indicate the <strong>regions to be compared</strong>. Consider the visual pattern within the marked circle rather than trying to identify a single exact pixel or point.</p><button onClick={onContinue}>Start Practice</button></section> }
+
+export function Training({ index, onContinue }: { index: number; onContinue: () => void }) {
   const item = uiConfig.training[index]
-  return <section><p className="eyebrow">Practice — responses are not measured</p><h1>{item.title}</h1>
-    {item.assetUrl ? <img className="training-image" src={item.assetUrl} alt={`Approved ${item.title} training stimulus`} /> :
-      <div className="training-placeholder" role="note"><strong>Training asset pending researcher approval</strong><p>The training flow is ready, but no example is shown because an approved non-measured stimulus has not been supplied. None of the 36 measured stimuli is reused here.</p></div>}
-    <p>{item.method === 'J' ? 'Remember: higher ridge means higher value.' : 'Use both axes of the 3×3 legend to interpret the combined class.'}</p>
-    <button onClick={onContinue}>{index === uiConfig.training.length - 1 ? 'Finish training' : 'Next training method'}</button>
+  const [selected, setSelected] = useState(''); const [checked, setChecked] = useState(false)
+  const correct = selected === item.correctAnswer
+  return <section><h1>{item.header}</h1><img className="training-image" src={item.assetUrl} alt={`${item.header} training stimulus`} />
+    <h2>{item.question}</h2><fieldset className="answers"><legend className="sr-only">Choose one response</legend>{[1,2,3,4].map(region => { const id=`region_${region}`; return <label className={`answer ${selected === id ? 'selected' : ''}`} key={id}><input disabled={checked} type="radio" name="training-answer" checked={selected === id} onChange={() => setSelected(id)} />Region {region}</label> })}</fieldset>
+    {!checked ? <button disabled={!selected} onClick={() => setChecked(true)}>Check answer</button> : <div className="training-feedback" role="status"><p><strong>{correct ? 'Correct.' : `Not quite. The correct answer is ${item.correctLabel}.`}</strong></p>{item.method === 'J' ? <><p>At <strong>Region 3</strong>, Variable B is higher than Variable A.</p><p>In a joy plot, compare the ridge heights within the marked region. Remember:</p><p><strong>Higher ridge = higher value.</strong></p></> : <><p><strong>Region 2</strong> represents a low value of Variable A and a high value of Variable B.</p><p>To interpret a bivariate choropleth map, match the colour of the cells within the marked region to the corresponding position in the <strong>3 × 3 legend</strong>.</p></>}<button onClick={onContinue}>{item.next}</button></div>}
   </section>
 }
 
 function Ready({ onStart }: { onStart: () => void }) {
-  return <section><h1>Measured test</h1><p>You will answer exactly six questions. Your experimental version is assigned only when you press Start.</p><p>Please work accurately. You may enlarge each image. Once an answer is submitted, you cannot go back.</p><button onClick={onStart}>Start measured test</button></section>
+  return <section><h1>Ready to Begin</h1><p>The practice is complete.</p><p>The measured part of the study contains <strong>six questions</strong>.</p><p>Please answer each question as <strong>accurately and efficiently as you can</strong>.</p><p>Your response time will be measured from the moment each question and visualisation appear until you submit your answer.</p><p>You may enlarge the visualisation if needed.</p><p>Once you submit an answer, you cannot return to the previous question.</p><p>Please complete all six questions in one sitting if possible.</p><p><strong>The test will begin after a short 3–2–1 countdown.</strong></p><button onClick={onStart}>Start Test</button></section>
 }
 
 function TrialScreen({ session, recovered, onAcknowledged }: { session: StudySession; recovered: number; onAcknowledged: (s: StudySession) => void }) {
