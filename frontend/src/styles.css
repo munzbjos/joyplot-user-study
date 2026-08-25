@@ -8,7 +8,8 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 button.secondary { color: #173f36; background: white; border: 1px solid #aab7b1; }
 button:focus-visible, input:focus-visible, label:has(input:focus-visible) { outline: 3px solid #e29d34; outline-offset: 3px; }
 .shell { width: min(920px, calc(100% - 3rem)); margin: 4rem auto; background: #fff; border: 1px solid #dfe3df; border-radius: .8rem; padding: clamp(2rem, 5vw, 4rem); box-shadow: 0 12px 35px rgb(27 43 37 / 6%); }
-.trial-shell { width: min(1180px, calc(100% - 3rem)); margin-block: 1.5rem; padding: 2rem 3rem; }
+.map-shell { width: min(1400px, calc(100% - 2rem)); padding: clamp(1rem, 3vw, 2rem); }
+.trial-shell { margin-block: 1.5rem; }
 h1 { font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.12; margin: 0 0 1.25rem; letter-spacing: -.025em; }
 h2 { font-size: 1.25rem; }
 p { line-height: 1.6; }
@@ -32,31 +33,22 @@ legend { font-weight: 700; margin-bottom: .75rem; }
 .legend-demo div { display: grid; grid-template-columns: repeat(3,1fr); width: 105px; }
 .legend-demo i { width: 35px; height: 35px; background: #d9e7dc; border: 1px solid white; }
 .legend-demo i:nth-child(2n) { background: #9dbca9; }.legend-demo i:nth-child(3n) { background: #547c72; }
-.training-image { display: block; max-width: 100%; max-height: 54vh; object-fit: contain; margin: 1.5rem auto; }
-.image-viewer { width: 100%; height: min(55vh, 620px); margin: 1.5rem 0; display: grid; place-items: center; overflow: hidden; background: #f7f8f6; border: 1px solid #e2e6e3; user-select: none; touch-action: none; cursor: default; }
+.image-viewer { width: min(100%, 1123px); aspect-ratio: 297 / 210; margin: 1.5rem auto; display: grid; place-items: center; overflow: hidden; background: #f7f8f6; border: 1px solid #e2e6e3; user-select: none; touch-action: none; cursor: default; }
 .image-viewer.zoomed { cursor: grab; }
 .image-viewer.zoomed:active { cursor: grabbing; }
 .image-viewer img { display: block; width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center; will-change: transform; pointer-events: none; }
-.measured-viewer { height: min(49vh, 520px); margin: 0 0 1rem; }
-.instruction-viewer, .practice-viewer { height: min(54vh, 600px); }
+.measured-viewer { margin-block: 0 1rem; }
 .countdown { height: 55vh; display: grid; place-items: center; }
 .countdown span { font-size: 8rem; font-variant-numeric: tabular-nums; }
 .trial header { display: flex; justify-content: space-between; align-items: center; }
 .trial progress { width: 12rem; accent-color: #276757; }
 .trial h1 { text-align: center; font-size: 1.75rem; margin: .5rem auto 1rem; max-width: 900px; }
-.stimulus { height: min(49vh, 520px); margin: 0; display: grid; place-items: center; background: #f7f8f6; border: 1px solid #e2e6e3; overflow: hidden; }
-.stimulus img { max-width: 100%; max-height: 100%; object-fit: contain; user-select: none; }
-.zoom-button { display: block; margin: .6rem auto; padding: .55rem 1rem; }
 .answers { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .6rem; margin: 1rem 0; }
 .answer { display: flex; align-items: center; min-height: 3.2rem; padding: .7rem .9rem; border: 1px solid #b8c1bd; border-radius: .4rem; cursor: pointer; }
 .answer.selected { border-color: #276757; background: #e9f0ed; box-shadow: inset 0 0 0 1px #276757; }
 .answer input { margin-right: .55rem; }
 .trial > button:last-child { display: block; min-width: 9rem; margin-left: auto; }
 .retry { display: flex; justify-content: space-between; align-items: center; gap: 2rem; padding: .7rem 1rem; background: #fff7e8; border: 1px solid #d8b46f; }
-.modal { position: fixed; inset: 0; z-index: 10; background: rgb(8 14 12 / 92%); display: flex; flex-direction: column; padding: 1rem; }
-.modal-close { align-self: flex-end; background: white; color: #17201d; margin-bottom: 1rem; }
-.pan-area { flex: 1; overflow: auto; display: grid; place-items: center; }
-.pan-area img { width: auto; min-width: min(1600px, 140vw); max-width: none; }
 .button-row { display: flex; gap: 1rem; }
 .status { text-align: center; padding: 5rem 0; }
 .gate { text-align: center; }

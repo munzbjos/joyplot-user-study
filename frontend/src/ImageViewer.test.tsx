@@ -32,6 +32,7 @@ describe('ImageViewer', () => {
     expect(gesture).toHaveBeenCalledTimes(1); expect(start).toHaveBeenCalledTimes(1)
     fireEvent.wheel(viewer, { deltaY: 100 }); fireEvent.wheel(viewer, { deltaY: 100 })
     expect(end).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole('img')).toHaveStyle({ transform: 'translate(0px, 0px) scale(1)' })
   })
 
   it('does not log a zoom gesture when the scale cannot change', () => {
@@ -39,5 +40,28 @@ describe('ImageViewer', () => {
     render(<ImageViewer src="/map.png" alt="Map" onZoomGesture={gesture} />)
     fireEvent.wheel(screen.getByRole('img').parentElement!, { deltaY: 100 })
     expect(gesture).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['/training/T0a01_J.png', 'T0 Joy'],
+    ['/training/T0a01_CH.png', 'T0 Choropleth'],
+    ['/stimuli/T1a01_CZP1_J.png', 'measured Joy'],
+    ['/stimuli/T1a01_CZP1_CH.png', 'measured Choropleth'],
+  ])('supports the 100%%, 150%% and 200%% QA sequence for %s', (src, alt) => {
+    render(<ImageViewer src={src} alt={alt} />)
+    const viewer = screen.getByRole('img').parentElement!
+    expect(viewer).toHaveAttribute('data-scale', '1.0')
+    for (let i = 0; i < 5; i += 1) fireEvent.wheel(viewer, { deltaY: -100 })
+    expect(viewer).toHaveAttribute('data-scale', '1.5')
+    fireEvent.pointerDown(viewer, { pointerId: 7, clientX: 10, clientY: 10 })
+    fireEvent.pointerMove(viewer, { pointerId: 7, clientX: 25, clientY: 30 })
+    fireEvent.pointerUp(viewer, { pointerId: 7, clientX: 25, clientY: 30 })
+    expect(screen.getByRole('img')).toHaveStyle({ transform: 'translate(15px, 20px) scale(1.5)' })
+    for (let i = 0; i < 5; i += 1) fireEvent.wheel(viewer, { deltaY: -100 })
+    expect(viewer).toHaveAttribute('data-scale', '2.0')
+    for (let i = 0; i < 10; i += 1) fireEvent.wheel(viewer, { deltaY: 100 })
+    expect(viewer).toHaveAttribute('data-scale', '1.0')
+    expect(screen.getByRole('img')).toHaveStyle({ transform: 'translate(0px, 0px) scale(1)' })
+    expect(screen.getByRole('img')).toHaveAttribute('src', src)
   })
 })

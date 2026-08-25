@@ -121,7 +121,8 @@ export function App() {
 
   if (!session && view !== 'error') return <main className="shell"><p>Preparing study…</p></main>
 
-  return <DesktopGate><main className={`shell ${view === 'trial' ? 'trial-shell' : ''}`}>
+  const usesMapCanvas = view === 'instructions-joy' || view === 'instructions-ch' || view === 'training' || view === 'trial'
+  return <DesktopGate><main className={`shell ${usesMapCanvas ? 'map-shell' : ''} ${view === 'trial' ? 'trial-shell' : ''}`}>
     {view === 'loading' && <p>Preparing study…</p>}
     {view === 'welcome' && <Welcome onContinue={async () => {
       const updated = await api.recordConsent(session!.session_token, uiConfig.consentTextVersion)

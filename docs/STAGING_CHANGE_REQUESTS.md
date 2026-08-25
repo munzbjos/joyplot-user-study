@@ -42,7 +42,7 @@ This document collects researcher-requested changes identified during manual QA 
   - preserve every PNG's original aspect ratio and full layout;
   - never crop or distort the PNG;
   - the complete image, including its legend, must be visible in the initial view;
-  - measured stimuli are portrait; T0 stimuli are landscape;
+  - all measured and T0 stimuli are landscape A4 layouts;
   - zoom by mouse wheel when the pointer is over the image;
   - pan by click-and-drag;
   - maximum zoom = 200%;
