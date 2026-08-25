@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .config import ExperimentConfig
 from .database import build_database
 from .models import AllocationState, Base, Participant, TrialResponse
-from .schemas import Demographics, PreferenceSubmission, SessionCreate, TrialSubmission
+from .schemas import ConsentSubmission, Demographics, PreferenceSubmission, SessionCreate, TrialSubmission
 from .settings import Settings
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -34,7 +34,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def state(p, completed):
         return {"status": p.status, "assigned_version": p.assigned_version, "completed_trials": completed,
                 "current_trial_position": min(completed + 1, 6) if p.assigned_version and completed < 6 else None,
-                "preference": p.preference}
+                "preference": p.preference, "consent_recorded": p.consented_at is not None,
+                "consent_version": p.consent_version}
 
     @app.get("/health")
     async def health(): return {"status": "ok"}
@@ -51,8 +52,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         completed = len((await session.scalars(select(TrialResponse).where(TrialResponse.participant_id == p.id))).all())
         return state(p, completed)
 
+    @app.put("/api/session/consent")
+    async def consent(body: ConsentSubmission, p=Depends(participant), session: AsyncSession=Depends(db)):
+        if body.consent_version != settings.consent_text_version:
+            raise HTTPException(409, "Consent text version does not match the current version")
+        if p.consented_at is not None:
+            if p.consent_version == body.consent_version:
+                return {"status": p.status, "consent_recorded": True, "consent_version": p.consent_version}
+            raise HTTPException(409, "Consent has already been recorded with a different version")
+        p.consented_at = datetime.now(timezone.utc)
+        p.consent_version = body.consent_version
+        if p.status == "created": p.status = "consent_recorded"
+        await session.commit()
+        return {"status": p.status, "consent_recorded": True, "consent_version": p.consent_version}
+
     @app.put("/api/session/demographics")
     async def demographics(body: Demographics, p=Depends(participant), session: AsyncSession=Depends(db)):
+        if p.consented_at is None: raise HTTPException(409, "Consent is required")
         if p.assigned_version: raise HTTPException(409, "Demographics are locked after test start")
         for k,v in body.model_dump().items(): setattr(p,k,v)
         p.status="ready"; await session.commit(); return {"status": p.status}
@@ -68,6 +84,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             .execution_options(populate_existing=True)
         )
         if p.assigned_version: return {"assigned_version": p.assigned_version, "trials": [experiment.trial(p.assigned_version,i) | {"options": _options(experiment, p.assigned_version, i)} for i in range(1,7)]}
+        if p.consented_at is None: raise HTTPException(409, "Consent is required")
         if p.status != "ready": raise HTTPException(409, "Participant information is required")
         # PostgreSQL serialises this critical section through a singleton row lock.
         alloc = await session.scalar(select(AllocationState).where(AllocationState.id == 1).with_for_update())
@@ -125,7 +142,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/admin/export.csv")
     async def export(x_admin_secret: str=Header(...),session:AsyncSession=Depends(db)):
         if not hmac.compare_digest(x_admin_secret,settings.admin_secret): raise HTTPException(401,"Invalid admin secret")
-        rows=(await session.execute(select(TrialResponse,Participant).join(Participant))).all(); out=io.StringIO(); fields=["participant_id","assigned_version","age","gender","cartographic_background","preference","status","trial_position","task_id","task_family","geography","pair","method","stimulus_filename","selected_answer","correct_answer","is_correct","rt_selection_ms","rt_submit_ms","answer_changes","zoom_used","zoom_count","zoom_duration_ms","trial_restarted","restart_count","trial_started_at","submitted_at"]
+        rows=(await session.execute(select(TrialResponse,Participant).join(Participant))).all(); out=io.StringIO(); fields=["participant_id","assigned_version","consented_at","consent_version","age","gender","cartographic_background","preference","status","trial_position","task_id","task_family","geography","pair","method","stimulus_filename","selected_answer","correct_answer","is_correct","rt_selection_ms","rt_submit_ms","answer_changes","zoom_used","zoom_count","zoom_duration_ms","trial_restarted","restart_count","trial_started_at","submitted_at"]
         w=csv.DictWriter(out,fields); w.writeheader()
         for r,p in rows: w.writerow({f:getattr(r,f,getattr(p,f,None)) for f in fields}|{"participant_id":str(p.id)})
         return Response(out.getvalue(),media_type="text/csv",headers={"Content-Disposition":"attachment; filename=joyplot-trials.csv"})

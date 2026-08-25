@@ -3,6 +3,49 @@ from collections import Counter
 from pathlib import Path
 from .conftest import new_ready
 
+
+async def test_consent_is_required_for_demographics_and_start(client):
+    created=(await client.post("/api/sessions",json={})).json()
+    headers={"Authorization":f"Bearer {created['session_token']}"}
+    demographics={"age":30,"gender":"man","cartographic_background":False}
+    assert (await client.put("/api/session/demographics",headers=headers,json=demographics)).status_code==409
+    assert (await client.post("/api/session/start",headers=headers)).status_code==409
+    state=(await client.get("/api/session",headers=headers)).json()
+    assert state["consent_recorded"] is False
+    assert state["consent_version"] is None
+    assert "consented_at" not in state
+
+
+async def test_consent_validates_version_and_explicit_acceptance(client):
+    created=(await client.post("/api/sessions",json={})).json()
+    headers={"Authorization":f"Bearer {created['session_token']}"}
+    assert (await client.put("/api/session/consent",headers=headers,json={"consented":False,"consent_version":"test-v1"})).status_code==422
+    assert (await client.put("/api/session/consent",headers=headers,json={"consented":True,"consent_version":"stale-v0"})).status_code==409
+    state=(await client.get("/api/session",headers=headers)).json()
+    assert state["consent_recorded"] is False
+
+
+async def test_consent_is_idempotent_but_conflicting_reconsent_is_rejected(client):
+    created=(await client.post("/api/sessions",json={})).json()
+    headers={"Authorization":f"Bearer {created['session_token']}"}
+    payload={"consented":True,"consent_version":"test-v1"}
+    first=await client.put("/api/session/consent",headers=headers,json=payload)
+    replay=await client.put("/api/session/consent",headers=headers,json=payload)
+    conflict=await client.put("/api/session/consent",headers=headers,json={"consented":True,"consent_version":"other-v2"})
+    assert first.status_code==200 and replay.status_code==200
+    assert replay.json()=={"status":"consent_recorded","consent_recorded":True,"consent_version":"test-v1"}
+    assert conflict.status_code==409
+
+
+async def test_minimum_age_is_eighteen(client):
+    created=(await client.post("/api/sessions",json={})).json()
+    headers={"Authorization":f"Bearer {created['session_token']}"}
+    await client.put("/api/session/consent",headers=headers,json={"consented":True,"consent_version":"test-v1"})
+    underage=await client.put("/api/session/demographics",headers=headers,json={"age":17,"gender":"man","cartographic_background":False})
+    adult=await client.put("/api/session/demographics",headers=headers,json={"age":18,"gender":"man","cartographic_background":False})
+    assert underage.status_code==422
+    assert adult.status_code==200
+
 async def test_session_token_is_recoverable_but_not_returned_in_state(client):
     created,headers=await new_ready(client)
     state=await client.get("/api/session",headers=headers)
@@ -45,6 +88,7 @@ async def test_full_flow_and_protected_export(client):
     exported=await client.get("/api/admin/export.csv",headers={"X-Admin-Secret":"admin-test-secret"})
     rows=list(csv.DictReader(io.StringIO(exported.text)))
     assert len(rows)==6 and all(r["participant_id"]==created["session_id"] for r in rows)
+    assert all(r["consent_version"]=="test-v1" and r["consented_at"] for r in rows)
 
 async def test_metric_consistency_validation(client):
     _,h=await new_ready(client); await client.post("/api/session/start",headers=h)

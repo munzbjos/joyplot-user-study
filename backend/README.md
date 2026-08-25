@@ -13,12 +13,13 @@ digest is stored in PostgreSQL. Research export requires `X-Admin-Secret`.
 ## API flow
 
 1. `POST /api/sessions`
-2. `PUT /api/session/demographics`
-3. `POST /api/session/start`
-4. `GET /api/trials/current`
-5. `POST /api/trials/{position}/response` for each trial
-6. `POST /api/session/preference`
-7. `POST /api/session/complete`
+2. `PUT /api/session/consent`
+3. `PUT /api/session/demographics`
+4. `POST /api/session/start`
+5. `GET /api/trials/current`
+6. `POST /api/trials/{position}/response` for each trial
+7. `POST /api/session/preference`
+8. `POST /api/session/complete`
 
 Session state is recovered with `GET /api/session`. Starting and response
 submission are idempotent. A replay with conflicting response data returns
@@ -31,10 +32,14 @@ python -m pip install -e '.[test]'
 pytest
 ```
 
-Set `DATABASE_URL`, `ADMIN_SECRET`, and `TOKEN_PEPPER`. Apply schema changes with
+Set `DATABASE_URL`, `ADMIN_SECRET`, `TOKEN_PEPPER`, and `CONSENT_TEXT_VERSION`. Apply schema changes with
 `alembic upgrade head`. Production uses PostgreSQL; tests use SQLite only as a
 fast API-level abstraction. The PostgreSQL row-locking allocation strategy must
 also be exercised in deployment QA.
+
+`CONSENT_TEXT_VERSION` is required and must identify the exact consent copy
+shown by the frontend. Bump it whenever that text changes; the API rejects stale
+or mismatched versions so consent cannot silently apply to different wording.
 
 For the PostgreSQL locking regression test, point only at a disposable database
 whose name contains `test`:

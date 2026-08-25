@@ -1,5 +1,5 @@
 export type Method = 'J' | 'CH'
-export type SessionStatus = 'created' | 'ready' | 'in_progress' | 'preference_recorded' | 'completed'
+export type SessionStatus = 'created' | 'consent_recorded' | 'ready' | 'in_progress' | 'preference_recorded' | 'completed'
 
 export interface Option { id: string; label: string }
 export interface SafeTrial {
@@ -21,6 +21,7 @@ export interface StudySession {
   current_trial_position?: number
   trials?: SafeTrial[]
   participant_information_complete?: boolean
+  consent_recorded?: boolean
 }
 export interface ParticipantInformation {
   age: number

@@ -30,6 +30,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
       ADMIN_SECRET: ${ADMIN_SECRET:?Set ADMIN_SECRET in .env}
       TOKEN_PEPPER: ${TOKEN_PEPPER:?Set TOKEN_PEPPER in .env}
+      CONSENT_TEXT_VERSION: ${CONSENT_TEXT_VERSION:?Set CONSENT_TEXT_VERSION in .env}
     depends_on:
       db:
         condition: service_healthy
@@ -58,7 +59,8 @@ services:
       dockerfile: deploy/Caddy.Dockerfile
       args:
         VITE_MIN_VIEWPORT_WIDTH: ${VITE_MIN_VIEWPORT_WIDTH:-1100}
-        VITE_MIN_PARTICIPANT_AGE: ${VITE_MIN_PARTICIPANT_AGE:-1}
+        VITE_MIN_PARTICIPANT_AGE: ${VITE_MIN_PARTICIPANT_AGE:-18}
+        VITE_CONSENT_TEXT_VERSION: ${VITE_CONSENT_TEXT_VERSION:-draft-v1}
         VITE_RESEARCH_INSTITUTION: ${VITE_RESEARCH_INSTITUTION:-[Research institution]}
         VITE_INVESTIGATOR: ${VITE_INVESTIGATOR:-[Investigator]}
         VITE_EXPECTED_DURATION: ${VITE_EXPECTED_DURATION:-[Expected duration]}

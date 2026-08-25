@@ -12,6 +12,7 @@ function initialView(session: StudySession): View {
   if (session.status === 'completed') return 'thank-you'
   if (session.assigned_version || session.status === 'in_progress' || session.status === 'preference_recorded') return 'resume'
   if (session.participant_information_complete || session.status === 'ready') return 'instructions'
+  if (session.consent_recorded || session.status === 'consent_recorded') return 'demographics'
   return 'welcome'
 }
 
@@ -120,7 +121,11 @@ export function App() {
 
   return <DesktopGate><main className={`shell ${view === 'trial' ? 'trial-shell' : ''}`}>
     {view === 'loading' && <p>Preparing study…</p>}
-    {view === 'welcome' && <Welcome onContinue={() => setView('demographics')} />}
+    {view === 'welcome' && <Welcome onContinue={async () => {
+      const updated = await api.recordConsent(session!.session_token, uiConfig.consentTextVersion)
+      setSession(current => current ? { ...current, ...updated } : updated)
+      setView('demographics')
+    }} />}
     {view === 'demographics' && <Demographics onSave={async information => {
       const updated = await api.saveParticipantInformation(session!.session_token, information)
       setSession(updated); setView('instructions')
@@ -164,14 +169,23 @@ export function App() {
   </main></DesktopGate>
 }
 
-function Welcome({ onContinue }: { onContinue: () => void }) {
+export function Welcome({ onContinue }: { onContinue: () => Promise<void> }) {
   const [consent, setConsent] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const continueAfterConsent = async () => {
+    if (!consent || saving) return
+    setSaving(true); setError('')
+    try { await onContinue() }
+    catch { setError('Your consent could not be recorded. Please check your connection and retry.'); setSaving(false) }
+  }
   return <section><p className="eyebrow">{uiConfig.institution}</p><h1>Spatial data visualisation study</h1>
     <p className="lead">This study investigates how people interpret different visualisations of spatial data.</p>
     <dl className="facts"><div><dt>Investigator</dt><dd>{uiConfig.investigator}</dd></div><div><dt>Expected duration</dt><dd>{uiConfig.expectedDuration}</dd></div></dl>
     <div className="notice"><p>Participation is voluntary.</p><p>{uiConfig.dataHandling}</p><p>{uiConfig.withdrawal}</p><p>{uiConfig.ethicsContact}</p></div>
     <label className="consent"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} /> I have read the information above and consent to participate.</label>
-    <button disabled={!consent} onClick={onContinue}>Continue</button>
+    {error && <p className="error" role="alert">{error}</p>}
+    <button disabled={!consent || saving} onClick={() => void continueAfterConsent()}>{saving ? 'Saving consent…' : 'Continue'}</button>
   </section>
 }
 

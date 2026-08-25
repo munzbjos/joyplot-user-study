@@ -36,6 +36,12 @@ export const api = {
     }),
   }),
   recoverSession: async (token: string) => ({ session_token: token, ...await request<Omit<StudySession, 'session_token'>>('/session', { headers: auth(token) }) }),
+  recordConsent: (token: string, consentVersion: string) =>
+    request<{ status: StudySession['status']; consent_recorded?: boolean }>('/session/consent', {
+      method: 'PUT',
+      body: JSON.stringify({ consented: true, consent_version: consentVersion }),
+      headers: auth(token),
+    }).then(result => ({ session_token: token, completed_trials: 0, consent_recorded: true, ...result })),
   saveParticipantInformation: (token: string, information: ParticipantInformation) =>
     request<{ status: StudySession['status'] }>('/session/demographics', {
       method: 'PUT', body: JSON.stringify(information), headers: auth(token),

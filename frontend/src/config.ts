@@ -1,6 +1,7 @@
 export const uiConfig = {
   minimumViewportWidth: Number(import.meta.env.VITE_MIN_VIEWPORT_WIDTH ?? 1100),
-  minimumParticipantAge: Number(import.meta.env.VITE_MIN_PARTICIPANT_AGE ?? 1),
+  minimumParticipantAge: Number(import.meta.env.VITE_MIN_PARTICIPANT_AGE ?? 18),
+  consentTextVersion: import.meta.env.VITE_CONSENT_TEXT_VERSION ?? 'draft-v1',
   institution: import.meta.env.VITE_RESEARCH_INSTITUTION ?? '[Research institution]',
   investigator: import.meta.env.VITE_INVESTIGATOR ?? '[Investigator]',
   expectedDuration: import.meta.env.VITE_EXPECTED_DURATION ?? '[Expected duration]',

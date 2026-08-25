@@ -13,7 +13,7 @@ class SessionCreate(BaseModel):
     device_pixel_ratio: float | None = Field(None, gt=0, le=20)
 
 class Demographics(BaseModel):
-    age: int = Field(ge=1, le=120)
+    age: int = Field(ge=18, le=120)
     gender: Gender
     cartographic_background: bool
 
@@ -37,3 +37,7 @@ class TrialSubmission(BaseModel):
         return self
 
 class PreferenceSubmission(BaseModel): preference: Preference
+
+class ConsentSubmission(BaseModel):
+    consented: Literal[True]
+    consent_version: str = Field(min_length=1, max_length=100)
