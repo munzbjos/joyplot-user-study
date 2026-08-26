@@ -25,6 +25,7 @@ class TrialSubmission(BaseModel):
     zoom_used: bool
     zoom_count: int = Field(ge=0, le=1000)
     zoom_duration_ms: float | None = Field(None, ge=0, le=86_400_000)
+    max_zoom_pct: float = Field(100, ge=100, le=250)
     trial_restarted: bool = False
     restart_count: int = Field(0, ge=0, le=1000)
     trial_started_at: datetime | None = None
@@ -33,6 +34,7 @@ class TrialSubmission(BaseModel):
     def consistent(self):
         if self.rt_selection_ms > self.rt_submit_ms: raise ValueError("selection time cannot exceed submit time")
         if self.zoom_used != (self.zoom_count > 0): raise ValueError("zoom fields are inconsistent")
+        if self.zoom_used != (self.max_zoom_pct > 100): raise ValueError("maximum zoom is inconsistent")
         if self.trial_restarted != (self.restart_count > 0): raise ValueError("restart fields are inconsistent")
         return self
 

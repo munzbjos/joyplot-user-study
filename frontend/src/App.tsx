@@ -224,7 +224,7 @@ function Demographics({ onSave }: { onSave: (value: ParticipantInformation) => P
   </form></section>
 }
 
-function InstructionsIntro({ onContinue }: { onContinue: () => void }) { return <section><h1>How to Read the Visualisations</h1><p>In this study, you will work with two different methods for visualising two spatial variables: <strong>Variable A</strong> and <strong>Variable B</strong>.</p><p>The following screens briefly explain how to read each visualisation. You will then complete two practice questions before starting the measured part of the study.</p><h2>How to interact with maps</h2><p>Move the pointer over an image and use the mouse wheel to zoom up to 200%. When zoomed, click and drag to pan. You can try these controls during practice.</p><button onClick={onContinue}>Continue</button></section> }
+function InstructionsIntro({ onContinue }: { onContinue: () => void }) { return <section><h1>How to Read the Visualisations</h1><p>In this study, you will work with two different methods for visualising two spatial variables: <strong>Variable A</strong> and <strong>Variable B</strong>.</p><p>The following screens briefly explain how to read each visualisation. You will then complete two practice questions before starting the measured part of the study.</p><h2>How to interact with maps</h2><p>Move the pointer over an image and use the mouse wheel to zoom smoothly up to 250%. When zoomed, click and drag to pan. You can try these controls during practice.</p><button onClick={onContinue}>Continue</button></section> }
 
 function JoyInstructions({ onBack, onContinue }: { onBack: () => void; onContinue: () => void }) { return <section><h1>Bivariate Joy Plot</h1><p>A bivariate joy plot represents spatial values using a series of profiles.</p><p><strong>Variable A</strong> and <strong>Variable B</strong> are shown as two overlaid sets of ridges.</p><p>The <strong>height of a ridge represents the value of the variable at that location:</strong></p><p><strong>Higher ridge = higher value.</strong></p><p>To compare values, look at the relative heights of the corresponding ridges at the location of interest.</p><p><strong>Variable A — blue</strong><br /><strong>Variable B — red</strong></p><ImageViewer className="instruction-viewer" src="/training/T0a01_J.png" alt="Bivariate Joy Plot training map with legend" /><div className="button-row"><button className="secondary" onClick={onBack}>Back</button><button onClick={onContinue}>Continue</button></div></section> }
 
@@ -259,6 +259,7 @@ function TrialScreen({ session, recovered, onAcknowledged }: { session: StudySes
   const [retrying, setRetrying] = useState(false)
   const [stimulusError, setStimulusError] = useState(false)
   const zoomStarted = useRef<number | null>(null)
+  const maxZoomPct = useRef(100)
   const stimulusImage = useRef<HTMLImageElement | null>(null)
   const idempotencyKey = useRef(crypto.randomUUID())
   const startedAt = useRef<string | undefined>(undefined)
@@ -303,7 +304,7 @@ function TrialScreen({ session, recovered, onAcknowledged }: { session: StudySes
     const alreadyPending = storage.getPending()
     const now = performance.now()
     const openZoomDuration = zoomStarted.current === null ? 0 : now - zoomStarted.current
-    const metrics: TrialMetrics = alreadyPending?.token === session.session_token && alreadyPending.position === trial.position ? alreadyPending.metrics : {
+    const metrics: TrialMetrics = alreadyPending?.token === session.session_token && alreadyPending.position === trial.position ? { ...alreadyPending.metrics, max_zoom_pct: alreadyPending.metrics.max_zoom_pct ?? 100 } : {
       selected_answer: selected,
       rt_selection_ms: Math.round((firstSelection - onset) * 1000) / 1000,
       rt_submit_ms: Math.round((now - onset) * 1000) / 1000,
@@ -311,6 +312,7 @@ function TrialScreen({ session, recovered, onAcknowledged }: { session: StudySes
       zoom_used: zoomCount > 0,
       zoom_count: zoomCount,
       zoom_duration_ms: Math.round((zoomDuration + openZoomDuration) * 1000) / 1000,
+      max_zoom_pct: maxZoomPct.current,
       trial_restarted: recovered > 0 || (trial.restart_count ?? 0) > 0,
       restart_count: Math.max(recovered, trial.restart_count ?? 0),
       idempotency_key: idempotencyKey.current,
@@ -327,7 +329,7 @@ function TrialScreen({ session, recovered, onAcknowledged }: { session: StudySes
   return <section className="trial" aria-busy={onset === null}>
     <header><p className="eyebrow">Question {trial.position} of 6</p><progress value={trial.position} max="6">{trial.position} of 6</progress></header>
     <h1>{trial.question}</h1>
-    <ImageViewer cropChoroplethFrame={trial.method === 'CH'} className="measured-viewer" imageRef={stimulusImage} interactive={onset !== null} src={trial.stimulus_url} alt="Experimental map stimulus" onZoomGesture={() => setZoomCount(value => value + 1)} onZoomStart={() => { zoomStarted.current = performance.now() }} onZoomEnd={finishZoom} />
+    <ImageViewer cropChoroplethFrame={trial.method === 'CH'} className="measured-viewer" imageRef={stimulusImage} interactive={onset !== null} src={trial.stimulus_url} alt="Experimental map stimulus" onZoomGesture={() => setZoomCount(value => value + 1)} onZoomStart={() => { zoomStarted.current = performance.now() }} onZoomEnd={finishZoom} onZoomChange={zoomPct => { maxZoomPct.current = Math.max(maxZoomPct.current, zoomPct) }} />
     <fieldset className="answers"><legend className="sr-only">Choose one response</legend>{trial.options.map(option => <label className={`answer ${selected === option.id ? 'selected' : ''}`} key={option.id}><input type="radio" name="answer" checked={selected === option.id} onChange={() => choose(option.id)} />{option.label}</label>)}</fieldset>
     {retrying && <div className="retry" role="alert"><p>Your response has not been confirmed. It is saved on this device.</p><button onClick={() => void submit()}>Retry submission</button></div>}
     {!retrying && <button disabled={!selected || onset === null || submitting} onClick={() => void submit()}>{submitting ? 'Saving response…' : 'Next'}</button>}

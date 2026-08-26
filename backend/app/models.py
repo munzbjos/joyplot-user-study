@@ -60,6 +60,7 @@ class TrialResponse(Base):
     zoom_used: Mapped[bool] = mapped_column(Boolean)
     zoom_count: Mapped[int] = mapped_column(Integer)
     zoom_duration_ms: Mapped[float | None] = mapped_column(Float)
+    max_zoom_pct: Mapped[float] = mapped_column(Float, default=100)
     trial_restarted: Mapped[bool] = mapped_column(Boolean)
     restart_count: Mapped[int] = mapped_column(Integer)
     trial_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

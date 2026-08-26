@@ -41,6 +41,11 @@ also be exercised in deployment QA.
 shown by the frontend. Bump it whenever that text changes; the API rejects stale
 or mismatched versions so consent cannot silently apply to different wording.
 
+Measured zoom fields use the initial fitted map as 100%: `zoom_used` records
+whether zoom ever exceeded 100%, `zoom_count` groups wheel events less than
+500 ms apart into one gesture, `zoom_duration_ms` sums time above 100%, and
+`max_zoom_pct` stores the highest continuous zoom reached (100–250%).
+
 For the PostgreSQL locking regression test, point only at a disposable database
 whose name contains `test`:
 

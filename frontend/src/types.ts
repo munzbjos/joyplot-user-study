@@ -36,6 +36,7 @@ export interface TrialMetrics {
   zoom_used: boolean
   zoom_count: number
   zoom_duration_ms: number
+  max_zoom_pct: number
   trial_restarted: boolean
   restart_count: number
   idempotency_key: string

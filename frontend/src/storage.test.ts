@@ -7,7 +7,7 @@ describe('local resilience storage', () => {
     expect(storage.getSessionToken()).toBe('anonymous-token')
   })
   it('retains an idempotent pending response', () => {
-    const pending = { token: 'token', position: 2, metrics: { selected_answer: 'region_1', rt_selection_ms: 100, rt_submit_ms: 200, answer_changes: 0, zoom_used: false, zoom_count: 0, zoom_duration_ms: 0, trial_restarted: false, restart_count: 0, idempotency_key: 'key' } }
+    const pending = { token: 'token', position: 2, metrics: { selected_answer: 'region_1', rt_selection_ms: 100, rt_submit_ms: 200, answer_changes: 0, zoom_used: false, zoom_count: 0, zoom_duration_ms: 0, max_zoom_pct: 100, trial_restarted: false, restart_count: 0, idempotency_key: 'key' } }
     storage.setPending(pending)
     expect(storage.getPending()).toEqual(pending)
     storage.clearPending()
