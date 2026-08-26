@@ -90,6 +90,7 @@ async def test_full_flow_and_protected_export(client):
     assert len(rows)==6 and all(r["participant_id"]==created["session_id"] for r in rows)
     assert all(r["consent_version"]=="test-v1" and r["consented_at"] for r in rows)
     assert all(r["max_zoom_pct"]=="100.0" for r in rows)
+    assert all(key in rows[0] for key in ("screen_width","screen_height","viewport_width","viewport_height","device_pixel_ratio","user_agent"))
 
 async def test_metric_consistency_validation(client):
     _,h=await new_ready(client); await client.post("/api/session/start",headers=h)
@@ -104,6 +105,20 @@ async def test_continuous_zoom_metrics_are_stored_and_exported(client):
     exported=await client.get("/api/admin/export.csv",headers={"X-Admin-Secret":"admin-test-secret"})
     row=next(r for r in csv.DictReader(io.StringIO(exported.text)) if r["rt_submit_ms"]=="640.0")
     assert {key:row[key] for key in ("zoom_used","zoom_count","zoom_duration_ms","max_zoom_pct")}=={"zoom_used":"True","zoom_count":"2","zoom_duration_ms":"321.5","max_zoom_pct":"219.7"}
+
+
+async def test_export_repeats_participant_device_metadata_per_trial(client):
+    device={"screen_width":2560,"screen_height":1440,"viewport_width":2400,"viewport_height":1200,"device_pixel_ratio":1.25}
+    created=(await client.post("/api/sessions",json=device,headers={"User-Agent":"QA Browser/1.0"})).json(); h={"Authorization":f"Bearer {created['session_token']}"}
+    await client.put("/api/session/consent",headers=h,json={"consented":True,"consent_version":"test-v1"})
+    await client.put("/api/session/demographics",headers=h,json={"age":30,"gender":"prefer_not_to_say","cartographic_background":False})
+    trial=(await client.post("/api/session/start",headers=h)).json()["trials"][0]
+    payload={"selected_answer":trial["options"][0]["id"],"rt_selection_ms":100,"rt_submit_ms":200,"answer_changes":0,"zoom_used":False,"zoom_count":0,"max_zoom_pct":100,"trial_restarted":False,"restart_count":0}
+    assert (await client.post("/api/trials/1/response",headers=h,json=payload)).status_code==200
+    exported=await client.get("/api/admin/export.csv",headers={"X-Admin-Secret":"admin-test-secret"})
+    row=next(r for r in csv.DictReader(io.StringIO(exported.text)) if r["participant_id"]==created["session_id"])
+    assert {key:row[key] for key in device}=={key:str(value) for key,value in device.items()}
+    assert row["user_agent"]=="QA Browser/1.0"
 
 
 async def test_complete_six_version_simulation_and_export(client):
