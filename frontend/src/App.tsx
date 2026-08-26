@@ -336,11 +336,11 @@ function TrialScreen({ session, recovered, onAcknowledged }: { session: StudySes
   </section>
 }
 
-function Preference({ onSubmit }: { onSubmit: (preference: string) => Promise<void> }) {
+export function Preference({ onSubmit }: { onSubmit: (preference: string) => Promise<void> }) {
   const [value, setValue] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  return <section><h1>Which visualisation method did you prefer overall?</h1><fieldset><legend className="sr-only">Method preference</legend>{[
+  return <section><h1>Almost done!</h1><p>One last question about your overall preference.</p><h2>Which visualisation method did you prefer overall?</h2><fieldset><legend className="sr-only">Method preference</legend>{[
     ['joy_plot','I preferred the bivariate joy plot.'], ['bivariate_choropleth','I preferred the bivariate choropleth map.'], ['no_preference','I had no preference.'],
   ].map(([id,label]) => <label className="choice" key={id}><input type="radio" name="preference" checked={value === id} onChange={() => setValue(id)} />{label}</label>)}</fieldset>
     {error && <p className="error" role="alert">{error}</p>}<button disabled={!value || saving} onClick={async () => { setSaving(true); try { await onSubmit(value) } catch { setError('Your preference could not be saved. Please retry.'); setSaving(false) } }}>{saving ? 'Saving…' : 'Submit'}</button>

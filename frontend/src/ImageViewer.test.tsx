@@ -7,7 +7,7 @@ describe('ImageViewer', () => {
     render(<ImageViewer src="/map.png" alt="Map" />)
     const viewer = screen.getByRole('img').parentElement!
     expect(viewer).toHaveAttribute('data-scale', '1.0000')
-    for (let i = 0; i < 20; i += 1) fireEvent.wheel(viewer, { deltaY: -100 })
+    for (let i = 0; i < 100; i += 1) fireEvent.wheel(viewer, { deltaY: -100 })
     expect(viewer).toHaveAttribute('data-scale', '2.5000')
     expect(screen.getByRole('img')).toHaveStyle({ transform: 'translate(0px, 0px) scale(2.5)' })
   })
@@ -21,7 +21,7 @@ describe('ImageViewer', () => {
     fireEvent.wheel(viewer, { deltaY: -100 })
     fireEvent.pointerDown(viewer, { pointerId: 1, clientX: 10, clientY: 10 })
     fireEvent.pointerMove(viewer, { pointerId: 1, clientX: 30, clientY: 40 })
-    expect(screen.getByRole('img')).toHaveStyle({ transform: 'translate(20px, 30px) scale(1.1618)' })
+    expect(screen.getByRole('img').getAttribute('style')).toContain('translate(20px, 30px) scale(1.0356')
   })
 
   it('groups wheel events into gestures and reports zoom lifecycle', () => {
@@ -52,10 +52,20 @@ describe('ImageViewer', () => {
     const viewer = screen.getByRole('img').parentElement!
     vi.spyOn(viewer, 'getBoundingClientRect').mockReturnValue({ x: 0, y: 0, left: 0, top: 0, right: 1000, bottom: 700, width: 1000, height: 700, toJSON: () => ({}) })
     fireEvent.wheel(viewer, { deltaY: -100, clientX: 750, clientY: 350 })
-    expect(viewer).toHaveAttribute('data-scale', '1.1618')
+    expect(viewer).toHaveAttribute('data-scale', '1.0356')
     const translatedX = Number(screen.getByRole('img').getAttribute('style')!.match(/translate\(([-\d.]+)px/)![1])
-    expect(translatedX).toBeCloseTo(-40.45, 2)
-    expect(changed).toHaveBeenLastCalledWith(116.2)
+    expect(translatedX).toBeCloseTo(-8.905, 3)
+    expect(changed).toHaveBeenLastCalledWith(103.6)
+  })
+
+  it('produces many unsnapped intermediate values for small trackpad deltas', () => {
+    const values: number[] = []
+    render(<ImageViewer src="/map.png" alt="Map" onZoomChange={value => values.push(value)} />)
+    const viewer = screen.getByRole('img').parentElement!
+    for (let i = 0; i < 20; i += 1) fireEvent.wheel(viewer, { deltaY: -2 })
+    expect(new Set(values).size).toBeGreaterThan(10)
+    expect(Number(viewer.getAttribute('data-scale'))).toBeGreaterThan(1)
+    expect(Number(viewer.getAttribute('data-scale'))).toBeLessThan(1.02)
   })
 
   it('does not log a zoom gesture when the scale cannot change', () => {
@@ -83,25 +93,25 @@ describe('ImageViewer', () => {
   })
 
   it.each([
-    ['/training/T0a01_J.png', 'T0 Joy'],
-    ['/training/T0a01_CH.png', 'T0 Choropleth'],
-    ['/stimuli/T1a01_CZP1_J.png', 'measured Joy'],
-    ['/stimuli/T1a01_CZP1_CH.png', 'measured Choropleth'],
-  ])('supports continuous 100%%, 160%%, 220%% and 250%% QA for %s', (src, alt) => {
+    { src: '/training/T0a01_J.png', alt: 'T0 Joy' },
+    { src: '/training/T0a01_CH.png', alt: 'T0 Choropleth' },
+    { src: '/stimuli/T1a01_CZP1_J.png', alt: 'measured Joy' },
+    { src: '/stimuli/T1a01_CZP1_CH.png', alt: 'measured Choropleth' },
+  ])('supports continuous zoom QA for $alt ($src)', ({ src, alt }) => {
     render(<ImageViewer src={src} alt={alt} />)
     const viewer = screen.getByRole('img').parentElement!
     expect(viewer).toHaveAttribute('data-scale', '1.0000')
-    fireEvent.wheel(viewer, { deltaY: -313.34 })
+    fireEvent.wheel(viewer, { deltaY: -1342.87 })
     expect(Number(viewer.getAttribute('data-scale'))).toBeCloseTo(1.6, 2)
     fireEvent.pointerDown(viewer, { pointerId: 7, clientX: 10, clientY: 10 })
     fireEvent.pointerMove(viewer, { pointerId: 7, clientX: 25, clientY: 30 })
     fireEvent.pointerUp(viewer, { pointerId: 7, clientX: 25, clientY: 30 })
     expect(screen.getByRole('img').getAttribute('style')).toContain('translate(15px, 20px)')
-    fireEvent.wheel(viewer, { deltaY: -212.29 })
+    fireEvent.wheel(viewer, { deltaY: -909.97 })
     expect(Number(viewer.getAttribute('data-scale'))).toBeCloseTo(2.2, 2)
-    fireEvent.wheel(viewer, { deltaY: -200 })
+    fireEvent.wheel(viewer, { deltaY: -500 })
     expect(viewer).toHaveAttribute('data-scale', '2.5000')
-    fireEvent.wheel(viewer, { deltaY: 1000 })
+    fireEvent.wheel(viewer, { deltaY: 10000 })
     expect(viewer).toHaveAttribute('data-scale', '1.0000')
     expect(screen.getByRole('img')).toHaveStyle({ transform: 'translate(0px, 0px) scale(1)' })
     expect(screen.getByRole('img')).toHaveAttribute('src', src)

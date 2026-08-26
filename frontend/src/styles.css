@@ -6,7 +6,8 @@ button { border: 0; border-radius: .45rem; padding: .82rem 1.25rem; background: 
 button:hover { background: #0d3028; }
 button:disabled { opacity: .45; cursor: not-allowed; }
 button.secondary { color: #173f36; background: white; border: 1px solid #aab7b1; }
-button:focus-visible, input:focus-visible, label:has(input:focus-visible) { outline: 3px solid #e29d34; outline-offset: 3px; }
+button:focus-visible { outline: 3px solid #e29d34; outline-offset: 3px; }
+input:focus-visible { outline: 2px solid #bd7421; outline-offset: 2px; }
 .shell { width: min(920px, calc(100% - 3rem)); margin: 4rem auto; background: #fff; border: 1px solid #dfe3df; border-radius: .8rem; padding: clamp(2rem, 5vw, 4rem); box-shadow: 0 12px 35px rgb(27 43 37 / 6%); }
 .map-shell { width: min(1400px, calc(100% - 2rem)); padding: clamp(1rem, 3vw, 2rem); }
 .trial-shell { margin-block: 1.5rem; }

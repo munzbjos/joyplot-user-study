@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { App } from './App'
+import { App, Preference } from './App'
 import { api, ApiError } from './api'
 import { storage } from './storage'
 
@@ -43,6 +43,7 @@ describe('versioned consent flow', () => {
     expect(await screen.findByRole('heading', { name: 'About You' })).toBeInTheDocument()
     expect(screen.getByLabelText('Age')).toHaveAttribute('min', '18')
     await user.type(screen.getByLabelText('Age'), '17')
+    expect(screen.getByLabelText('Age')).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
     expect(api.recordConsent).toHaveBeenCalledWith('session-token', '1.0')
   })
@@ -73,5 +74,15 @@ describe('versioned consent flow', () => {
     expect(screen.getByRole('link', { name: 'Josef Münzberger on LinkedIn' })).toHaveAttribute('href', 'https://www.linkedin.com/in/josef-m%C3%BCnzberger-a71a29204/')
     expect(screen.getByRole('link', { name: 'Email Josef Münzberger' })).toHaveAttribute('href', 'mailto:josef.munzberger@fsv.cvut.cz')
     expect(screen.getByRole('link', { name: 'Bivariate Joy Plot article' })).toHaveAttribute('href', 'https://doi.org/10.1080/00087041.2026.2715285')
+  })
+
+  it('uses the non-evaluative final preference transition and preserves options', () => {
+    render(<Preference onSubmit={vi.fn()} />)
+    expect(screen.getByRole('heading', { name: 'Almost done!' })).toBeInTheDocument()
+    expect(screen.getByText('One last question about your overall preference.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Which visualisation method did you prefer overall?' })).toBeInTheDocument()
+    expect(screen.getByLabelText('I preferred the bivariate joy plot.')).toBeInTheDocument()
+    expect(screen.getByLabelText('I preferred the bivariate choropleth map.')).toBeInTheDocument()
+    expect(screen.getByLabelText('I had no preference.')).toBeInTheDocument()
   })
 })
