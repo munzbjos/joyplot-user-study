@@ -112,3 +112,15 @@ Use the backend's authenticated researcher export endpoint or documented CLI.
 Keep `ADMIN_SECRET` out of shell history where possible, transfer exports
 over an encrypted channel, and delete working copies according to the approved
 data-retention plan. The public frontend must never contain the answer key.
+
+For the non-container staging VPS, install `deploy/joyplot-export` as the
+user-only command `~/.local/bin/joyplot-export` (mode 0700). A researcher with
+SSH access can then stream the current trial-level CSV through SSH:
+
+```sh
+ssh maia@SERVER joyplot-export > joyplot-trials.csv
+```
+
+The command connects only to the local `joyplot_staging` database using peer
+authentication. It neither exposes a researcher web UI nor transmits the admin
+API secret.
