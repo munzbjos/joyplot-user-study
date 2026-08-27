@@ -2,7 +2,8 @@ import { PointerEvent, RefObject, useEffect, useRef, useState } from 'react'
 
 const MIN_SCALE = 1
 const MAX_SCALE = 2.5
-const ZOOM_SENSITIVITY = 0.00035
+const ZOOM_SENSITIVITY = 0.0008
+const MAX_NORMALISED_WHEEL_DELTA = 120
 const GESTURE_GAP_MS = 500
 
 interface ImageViewerProps {
@@ -34,8 +35,10 @@ export function ImageViewer({ src, alt, className = '', imageRef, interactive = 
       event.preventDefault()
       if (!interactive) return
       const current = scaleRef.current
-      const delta = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 : event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? node.clientHeight : 1)
-      const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, current * Math.exp(-delta * ZOOM_SENSITIVITY)))
+      const rawDelta = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 : event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? node.clientHeight : 1)
+      const delta = Math.max(-MAX_NORMALISED_WHEEL_DELTA, Math.min(MAX_NORMALISED_WHEEL_DELTA, rawDelta))
+      const calculated = current * Math.exp(-delta * ZOOM_SENSITIVITY)
+      const next = calculated <= MIN_SCALE + 0.0001 ? MIN_SCALE : Math.min(MAX_SCALE, calculated)
       if (next === current) return
       const now = performance.now()
       if (now - lastWheel.current >= GESTURE_GAP_MS) onZoomGesture?.()
