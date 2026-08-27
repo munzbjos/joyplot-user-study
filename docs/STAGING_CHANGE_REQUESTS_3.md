@@ -30,7 +30,7 @@ This document contains the third round of researcher-requested changes identifie
 ## CR3-001 — Prevent page/canvas scrolling while mouse-wheel zooming a map
 
 - **Screen:** Global — every instructional, practice and measured map viewer
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 ### Requested change
@@ -67,7 +67,7 @@ Do **not** globally lock page scrolling. Use local event handling on the map vie
 ## CR3-002 — Rename the method consistently to “Bivariate Joy Plot”
 
 - **Screen:** Global participant-facing terminology
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 ### Requested change
@@ -122,7 +122,7 @@ A repository search should find no remaining participant-facing use of `Joy Plot
 ## CR3-003 — Refine the two practice-screen headings
 
 - **Screen:** Practice 1 and Practice 2
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P2
 
 ### Requested change
@@ -151,7 +151,7 @@ Practice 2:
 ## CR3-004 — Remove the thin exported black layout frame from choropleth display
 
 - **Screen:** All bivariate choropleth images, including training and measured trials
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 ### Background
@@ -201,7 +201,7 @@ Do not use heuristic/content-aware cropping at every load.
 ## CR3-005 — Refine the Thank You screen and add researcher contact links
 
 - **Screen:** Thank You
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P2
 
 ### Title
@@ -304,3 +304,25 @@ When these changes are complete:
 3. report any new/changed test coverage;
 4. push the reviewed implementation to `develop`;
 5. send the researcher a concise Telegram report with commit hash and QA result.
+
+---
+
+## QA result
+
+- The choropleth raster audit covered `training/T0a01_CH.png` and all 18
+  measured `*_CH.png` files. The black frame is consistently 2 px at the top,
+  2 px on each side, and 1 px at the bottom. T0/T1/T2 exports contain one
+  additional blank row after the bottom line (2481 px high); T3 ends on the
+  line (2480 px high). A conservative fixed 2 px display inset on every side
+  removes the frame and trailing blank row without touching source files.
+- Viewer regression coverage verifies locally cancelled wheel events, normal
+  wheel behaviour outside the viewer, 200% cap, drag pan, zoom callbacks and
+  the choropleth-only crop class. Existing RT arming code was not changed.
+- Training Joy/CH and representative measured J/CH paths remain covered at
+  100%, 150%, 200% and return to centred 100%. CZ and FR choropleth files were
+  included in the raster audit.
+- Participant-facing source and canonical copy were searched for obsolete
+  standalone `Joy Plot` / `joy plot` terminology. Internal `J` codes,
+  filenames and locked experiment configuration were not renamed.
+- Thank You regression coverage verifies the heading, placeholder removal,
+  exact link targets and accessible link labels.

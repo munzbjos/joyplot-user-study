@@ -1,6 +1,6 @@
 # Participant-Facing Copy
 
-Authoritative participant-facing wording for the **Joy Plot User Study** web application.
+Authoritative participant-facing wording for the **Bivariate Joy Plot User Study** web application.
 
 > **Implementation note:** Treat this document as the canonical source for participant-facing wording. Keep the content configurable rather than hard-coded across frontend components. Text marked `[TO BE CONFIRMED]` must remain editable and must not be replaced without researcher approval.
 
@@ -148,26 +148,21 @@ Button:
 
 ---
 
-## 4. Joy Plot Instructions
+## 4. Bivariate Joy Plot Instructions
 
 ### Title
 
-**Joy Plot**
+**Bivariate Joy Plot**
 
-A joy plot represents spatial values using a series of profiles.
+A bivariate joy plot represents spatial values using a series of profiles.
 
-**Variable A** and **Variable B** are shown as two overlaid sets of ridges.
+**Variable A** and **Variable B** are shown as two overlaid sets of ridges. **The legend identifies the variables by colour: Variable A is blue and Variable B is red.**
 
 The **height of a ridge represents the value of the variable at that location:**
 
 **Higher ridge = higher value.**
 
 To compare values, look at the relative heights of the corresponding ridges at the location of interest.
-
-Visual key:
-
-- **Variable A — blue**
-- **Variable B — red**
 
 Button:
 
@@ -206,7 +201,7 @@ Button:
 
 You will now complete two practice questions:
 
-- one using a **joy plot**;
+- one using a **bivariate joy plot**;
 - one using a **bivariate choropleth map**.
 
 These practice questions are **not part of the measured test**, and your response time will not be analysed.
@@ -221,11 +216,11 @@ Button:
 
 ---
 
-## 7. Practice 1 — Joy Plot
+## 7. Practice 1: Bivariate Joy Plot
 
 ### Header
 
-**Practice 1 of 2 — Joy Plot**
+Practice 1 of 2: **Bivariate Joy Plot**
 
 ### Training asset
 
@@ -264,7 +259,7 @@ The button remains disabled until a response has been selected.
 
 At **Region 3**, Variable B is higher than Variable A.
 
-In a joy plot, compare the ridge heights within the marked region. Remember:
+In a bivariate joy plot, compare the ridge heights within the marked region. Remember:
 
 **Higher ridge = higher value.**
 
@@ -278,7 +273,7 @@ Button:
 
 At **Region 3**, Variable B is higher than Variable A.
 
-In a joy plot, compare the ridge heights within the marked region. Remember:
+In a bivariate joy plot, compare the ridge heights within the marked region. Remember:
 
 **Higher ridge = higher value.**
 
@@ -288,11 +283,11 @@ Button:
 
 ---
 
-## 8. Practice 2 — Bivariate Choropleth Map
+## 8. Practice 2: Bivariate Choropleth Map
 
 ### Header
 
-**Practice 2 of 2 — Bivariate Choropleth Map**
+Practice 2 of 2: **Bivariate Choropleth Map**
 
 ### Training asset
 
@@ -425,13 +420,19 @@ Do not allow Back navigation after submission.
 
 ## 12. Method Preference
 
+### Title
+
+**Almost done!**
+
+**One last question about your overall preference.**
+
 ### Question
 
 **Which visualisation method did you prefer overall?**
 
 Options:
 
-- I preferred the joy plot.
+- I preferred the bivariate joy plot.
 - I preferred the bivariate choropleth map.
 - I had no preference.
 
@@ -445,13 +446,17 @@ Button:
 
 ### Title
 
-**Thank You**
+**Thank You!**
 
 Thank you for taking part in this study.
 
 Your responses have been recorded successfully.
 
-**[OPTIONAL FINAL CONTACT / RESEARCH INFORMATION TO BE CONFIRMED]**
+Contact links:
+
+- [LinkedIn](https://www.linkedin.com/in/josef-m%C3%BCnzberger-a71a29204/)
+- [josef.munzberger@fsv.cvut.cz](mailto:josef.munzberger@fsv.cvut.cz)
+- [Bivariate Joy Plot article](https://doi.org/10.1080/00087041.2026.2715285)
 
 ---
 
@@ -461,7 +466,7 @@ The training module is now defined as follows.
 
 | Practice | Method | Asset | Question | Correct answer |
 |---|---|---|---|---|
-| Practice 1 | Joy plot | `training/T0a01_J.png` | At which marked region is Variable B higher than Variable A? | Region 3 |
+| Practice 1 | Bivariate Joy Plot | `training/T0a01_J.png` | At which marked region is Variable B higher than Variable A? | Region 3 |
 | Practice 2 | Bivariate choropleth map | `training/T0a01_CH.png` | Which marked region shows a low value of Variable A and a high value of Variable B? | Region 2 |
 
 Training rules:

@@ -4,6 +4,7 @@ import json
 from collections import Counter, defaultdict
 
 BASE = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE.parent
 tasks_cfg = json.loads((BASE / "tasks.public.json").read_text(encoding="utf-8"))
 versions_cfg = json.loads((BASE / "versions.json").read_text(encoding="utf-8"))
 answers_cfg = json.loads((BASE / "answer_key.server.json").read_text(encoding="utf-8"))
@@ -13,6 +14,12 @@ versions = versions_cfg["versions"]
 answers = answers_cfg["answers"]
 task_by_id = {t["id"]: t for t in tasks}
 errors = []
+
+if len(tasks) != 18:
+    errors.append(f"expected 18 tasks, found {len(tasks)}")
+
+if len(versions) != 6:
+    errors.append(f"expected 6 versions, found {len(versions)}")
 
 expected_geo_pairs = {
     ("CZ", "P1"), ("CZ", "P2"), ("CZ", "P3"),
@@ -58,21 +65,45 @@ for a, b in versions_cfg["complementary_pairs"]:
 if set(answers) != set(task_by_id):
     errors.append("answer key IDs != task IDs")
 
-# Optional asset directory check:
-stimulus_dir = BASE / "stimuli"
-if stimulus_dir.exists():
-    expected_files = {
-        filename
-        for task in tasks
-        for filename in task["assets"].values()
-    }
+for task in tasks:
+    option_set_id = task.get("option_set_id")
+    option_set = tasks_cfg["option_sets"].get(option_set_id)
+    if option_set is None:
+        errors.append(f"{task['id']}: unknown option set {option_set_id!r}")
+        continue
+    valid_answer_ids = {option["id"] for option in option_set}
+    if answers.get(task["id"]) not in valid_answer_ids:
+        errors.append(
+            f"{task['id']}: correct answer is not valid for option set "
+            f"{option_set_id!r}"
+        )
+
+# Frozen master assets live in the repository-root stimuli/ directory.
+stimulus_dir = PROJECT_ROOT / "stimuli"
+expected_files = {
+    filename
+    for task in tasks
+    for filename in task["assets"].values()
+}
+if len(expected_files) != 36:
+    errors.append(f"expected 36 unique referenced PNGs, found {len(expected_files)}")
+if not stimulus_dir.is_dir():
+    errors.append(f"stimulus directory not found: {stimulus_dir}")
+else:
     actual_files = {p.name for p in stimulus_dir.glob("*.png")}
     missing = expected_files - actual_files
     extra = actual_files - expected_files
     if missing:
         errors.append(f"missing PNGs: {sorted(missing)}")
     if extra:
-        print(f"WARNING: extra PNGs: {sorted(extra)}")
+        errors.append(f"extra PNGs: {sorted(extra)}")
+    empty = sorted(
+        filename
+        for filename in expected_files & actual_files
+        if (stimulus_dir / filename).stat().st_size == 0
+    )
+    if empty:
+        errors.append(f"empty PNGs: {empty}")
 
 if errors:
     print("EXPERIMENT CONFIGURATION: FAIL")
@@ -88,3 +119,5 @@ print(" - 3 CZ + 3 FR per version")
 print(" - 2 T1 + 2 T2 + 2 T3 per version")
 print(" - each task appears once as J and once as CH")
 print(" - complementary pairs validated")
+print(" - server answers validated against option sets")
+print(" - 36 root stimuli PNGs validated")

@@ -25,7 +25,7 @@ This folder contains the locked experiment configuration for the 18-task / 36-st
 
 - `validate_config.py`
   - Validates the experimental design.
-  - If a `stimuli/` subfolder exists next to the script, it also checks all 36 PNG filenames.
+  - Checks all 36 PNG filenames in the repository-root `stimuli/` directory.
 
 ## Suggested project layout
 

@@ -1,0 +1,32 @@
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
+import { Training } from './App'
+
+describe('locked training specification', () => {
+  it('uses the approved Joy asset, wording and Region 3 answer', async () => {
+    render(<Training index={0} onContinue={vi.fn()} />)
+    expect(screen.getByRole('img')).toHaveAttribute('src', '/training/T0a01_J.png')
+    const heading = screen.getByRole('heading', { name: 'Practice 1 of 2: Bivariate Joy Plot' })
+    expect(heading.querySelector('span')).toHaveTextContent('Practice 1 of 2:')
+    expect(heading.querySelector('strong')).toHaveTextContent('Bivariate Joy Plot')
+    expect(screen.getByRole('img').parentElement).not.toHaveClass('crop-choropleth-frame')
+    expect(screen.getByRole('heading', { name: 'At which marked region is Variable B higher than Variable A?' })).toBeInTheDocument()
+    await userEvent.click(screen.getByLabelText('Region 3'))
+    await userEvent.click(screen.getByRole('button', { name: 'Check answer' }))
+    expect(screen.getByText('Correct.')).toBeInTheDocument()
+  })
+
+  it('uses the approved choropleth asset, wording and Region 2 answer', async () => {
+    render(<Training index={1} onContinue={vi.fn()} />)
+    expect(screen.getByRole('img')).toHaveAttribute('src', '/training/T0a01_CH.png')
+    const heading = screen.getByRole('heading', { name: 'Practice 2 of 2: Bivariate Choropleth Map' })
+    expect(heading.querySelector('span')).toHaveTextContent('Practice 2 of 2:')
+    expect(heading.querySelector('strong')).toHaveTextContent('Bivariate Choropleth Map')
+    expect(screen.getByRole('img').parentElement).toHaveClass('crop-choropleth-frame')
+    expect(screen.getByRole('heading', { name: 'Which marked region shows a low value of Variable A and a high value of Variable B?' })).toBeInTheDocument()
+    await userEvent.click(screen.getByLabelText('Region 2'))
+    await userEvent.click(screen.getByRole('button', { name: 'Check answer' }))
+    expect(screen.getByText('Correct.')).toBeInTheDocument()
+  })
+})

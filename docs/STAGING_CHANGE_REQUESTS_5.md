@@ -17,7 +17,7 @@ This document contains the fifth round of researcher-requested changes identifie
 ## CR5-001 — Remove the oversized focus/bounding-box artefact around the age field
 
 - **Screen:** About You / Participant Information
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P2
 
 ### Background
@@ -56,7 +56,7 @@ Preferred behaviour:
 ## CR5-002 — Audit and, if necessary, implement genuinely smooth continuous map zoom
 
 - **Screen:** Global — all instructional, practice, and measured map viewers
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 ### Background
@@ -132,7 +132,7 @@ Do not change RT onset or RT measurement.
 ## CR5-003 — Add a softer transition into the final preference question
 
 - **Screen:** Method Preference / penultimate participant screen
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P2
 
 ### Wording
@@ -226,3 +226,27 @@ When complete:
    - explanation of what caused the previous zoom to feel stepped;
    - confirmation of the final focus styling;
    - confirmation of the final preference-screen wording.
+
+---
+
+## QA result
+
+- The oversized age focus artefact came from
+  `label:has(input:focus-visible)`, which outlined the entire label. That rule
+  was removed. The input retains a 2 px focus-visible outline with offset, so
+  mouse/keyboard focus remains clear without changing layout or validation.
+- The previous zoom had no predefined levels or CSS snapping, but multiplied
+  scale by `exp(-delta × 0.0015)` and rounded every result to four decimal
+  places. A typical 100-pixel wheel event therefore jumped about 16%; line-mode
+  wheel input could also create visibly coarse changes after normalization.
+- The final viewer removes internal scale rounding and uses restrained
+  sensitivity `0.00035`. Small trackpad deltas produce many distinct values;
+  there is no transition/inertia. Cursor anchoring, pan, local wheel capture,
+  100–250% bounds and all four measured zoom callbacks remain intact. RT code
+  was not changed.
+- Regression coverage exercises T0 Joy, T0 CH, measured J and measured CH at
+  intermediate values and both bounds, including cursor anchoring, pan, return
+  to 100%, page-scroll cancellation and metric callbacks.
+- The preference screen now begins with `Almost done!`, followed by
+  `One last question about your overall preference.` The existing question,
+  three options and server-side six-trial prerequisite remain unchanged.
