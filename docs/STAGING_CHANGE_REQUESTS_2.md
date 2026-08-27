@@ -34,7 +34,7 @@ This document contains the second round of researcher-requested changes after ma
 ### CR2-001 — Enlarge the application canvas and display all maps as full landscape A4 layouts
 
 - **Screen:** Global — Joy instructions, Choropleth instructions, both practice screens, and all measured trials
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P0
 
 #### Requested change
@@ -182,3 +182,17 @@ Verify that:
 - drag-pan works correctly after zoom;
 - returning to 100% restores the whole centred map;
 - measured RT logic is unaffected by the viewer resize/refactor.
+
+### QA result
+
+- Verified source geometry for T0 Joy, T0 Choropleth, measured Joy
+  `T1a01_CZP1_J.png`, and measured Choropleth `T1a01_CZP1_CH.png`: each is
+  3508 × 2481 px and uses the same landscape A4 aspect ratio.
+- Automated interaction QA passed for all four assets at initial 100%, 150%,
+  200%, and return to centred 100%; wheel zoom, drag pan, the 200% cap, and
+  zoom lifecycle callbacks remain covered.
+- Viewer initial width is capped at the 1123px logical target, with proportional
+  responsive fallback. Its height is derived only from `297 / 210`; no viewport-
+  height cap or portrait branch remains. Normal page scrolling is preserved.
+- Measured RT arming remains tied to decode plus visible paint of the fitted
+  image. Existing zoom metric callbacks remain connected in measured trials.

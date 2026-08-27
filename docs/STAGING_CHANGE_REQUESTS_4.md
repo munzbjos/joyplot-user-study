@@ -17,7 +17,7 @@ This document contains the fourth round of researcher-requested changes for the 
 ## CR4-001 — Replace stepped zoom with smooth continuous cursor-centred zoom
 
 - **Screen:** Global — all instructional, practice, and measured map viewers
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 ### Requested change
@@ -53,7 +53,7 @@ Keep the existing RT logic unchanged:
 ## CR4-002 — Preserve the agreed zoom metric definitions
 
 - **Screen:** Measured trials / backend data model
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 ### `zoom_used`
@@ -93,7 +93,7 @@ Do not store pan as a separate metric.
 ## CR4-003 — Add `max_zoom_pct`
 
 - **Screen:** Measured trials / backend database / export
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 ### Definition
@@ -187,3 +187,26 @@ When complete:
    - final zoom range,
    - confirmation of metric definitions,
    - one sample stored trial showing the four zoom metrics.
+
+---
+
+## QA result
+
+- T0 Bivariate Joy Plot, T0 Bivariate Choropleth Map, measured J
+  `T1a01_CZP1_J.png`, and measured CH `T1a01_CZP1_CH.png` were exercised by
+  the viewer regression suite through continuous intermediate zoom values,
+  cursor anchoring, 100% minimum, 250% maximum, pan, locally cancelled wheel
+  scrolling, and return to the centred complete-map view.
+- The viewer uses a restrained exponential wheel/trackpad response with no
+  inertial animation. Both methods use the same component. RT arming code was
+  unchanged.
+- Gesture tests cover the strict 500 ms grouping boundary. Duration callbacks
+  cover entry above and return to 100%; an open interval is included at submit.
+  Refresh recovery supplies 100 for legacy pending responses without the new
+  field.
+- Alembic migration `0003_trial_max_zoom` passed against a clean PostgreSQL
+  database and the staging database. API validation, model persistence, CSV
+  export, and the 100–250 range are covered by backend tests.
+- Staging sample trial `c8de4e21-c8ca-449e-b6b0-f0fe19081757`, position 1:
+  `zoom_used=true`, `zoom_count=2`, `zoom_duration_ms=845.3`,
+  `max_zoom_pct=219.7`. The database row and CSV export agree.

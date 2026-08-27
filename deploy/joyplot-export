@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if (( $# != 0 )); then
+  echo "Usage: joyplot-export" >&2
+  exit 2
+fi
+
+export PGAPPNAME=joyplot-research-export
+
+exec /usr/bin/psql --dbname=joyplot_staging --no-psqlrc --set=ON_ERROR_STOP=1 <<'SQL'
+COPY (
+  SELECT
+    p.id::text AS participant_id,
+    p.assigned_version,
+    p.consented_at,
+    p.consent_version,
+    p.age,
+    p.gender,
+    CASE WHEN p.cartographic_background IS NULL THEN NULL WHEN p.cartographic_background THEN 'True' ELSE 'False' END AS cartographic_background,
+    p.screen_width,
+    p.screen_height,
+    p.viewport_width,
+    p.viewport_height,
+    p.device_pixel_ratio,
+    p.user_agent,
+    p.preference,
+    p.status,
+    r.trial_position,
+    r.task_id,
+    r.task_family,
+    r.geography,
+    r.pair,
+    r.method,
+    r.stimulus_filename,
+    r.selected_answer,
+    r.correct_answer,
+    CASE WHEN r.is_correct THEN 'True' ELSE 'False' END AS is_correct,
+    r.rt_selection_ms,
+    r.rt_submit_ms,
+    r.answer_changes,
+    CASE WHEN r.zoom_used THEN 'True' ELSE 'False' END AS zoom_used,
+    r.zoom_count,
+    r.zoom_duration_ms,
+    r.max_zoom_pct,
+    CASE WHEN r.trial_restarted THEN 'True' ELSE 'False' END AS trial_restarted,
+    r.restart_count,
+    r.trial_started_at,
+    r.submitted_at
+  FROM trial_responses AS r
+  JOIN participants AS p ON p.id = r.participant_id
+  ORDER BY r.submitted_at, p.id, r.trial_position
+) TO STDOUT WITH (FORMAT csv, HEADER true);
+SQL

@@ -16,7 +16,7 @@ This document contains the sixth round of researcher-requested changes.
 ## CR6-001 — Clarify the Bivariate Joy Plot legend instructions
 
 - **Screen:** Visualisation Instructions — Bivariate Joy Plot
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P2
 
 ### Background

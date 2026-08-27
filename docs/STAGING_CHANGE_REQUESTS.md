@@ -35,14 +35,14 @@ This document collects researcher-requested changes identified during manual QA 
 ### CR-012 — Standardise all map/stimulus rendering and interaction
 
 - **Screen:** Global — all instructional, practice and measured map images
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P0
 - **Requested change:** Use one consistent image-viewer component for all PNG maps.
 - **Exact wording / UI requirement:**
   - preserve every PNG's original aspect ratio and full layout;
   - never crop or distort the PNG;
   - the complete image, including its legend, must be visible in the initial view;
-  - measured stimuli are portrait; T0 stimuli are landscape;
+  - all measured and T0 stimuli are landscape A4 layouts;
   - zoom by mouse wheel when the pointer is over the image;
   - pan by click-and-drag;
   - maximum zoom = 200%;
@@ -68,7 +68,7 @@ This document collects researcher-requested changes identified during manual QA 
 ### Screen 01 — Welcome / Consent
 
 #### CR-001 — Simplify Welcome content
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 - **Requested change:** Remove these sections completely:
   - `What data will be collected?`
@@ -78,12 +78,12 @@ This document collects researcher-requested changes identified during manual QA 
 - **Caution:** Keep the content restorable in case institutional requirements later require it.
 
 #### CR-002 — Remove introductory thank-you sentence
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P2
 - **Requested change:** Remove `Thank you for taking part in this study.`
 
 #### CR-003 — Adjust Welcome title and wrapping
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P2
 - **Requested change:** Change `Visualisation of Spatial Data — User Study` to `Visualisation of Spatial Data: User Study`.
 - **Acceptance criteria:** Prefer one line; if wrapping is necessary, keep `User Study` together on the second line.
@@ -99,7 +99,7 @@ This document collects researcher-requested changes identified during manual QA 
 ### Screen 02 — Participant Information
 
 #### CR-005 — Disable Continue for age below 18
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 - **Requested change:** If entered age is below 18, the `Continue` button must remain disabled.
 - **Acceptance criteria:** Client prevents continuation for age < 18; backend rejects an under-18 value if submitted directly.
@@ -113,7 +113,7 @@ This document collects researcher-requested changes identified during manual QA 
 ### Screen 03 — Instructions Introduction
 
 #### CR-007 — Add map interaction instructions
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 - **Requested change:** Add a short subsection such as `How to interact with maps`.
 - **Exact wording / UI requirement:** Explain concisely that participants can:
@@ -128,13 +128,13 @@ This document collects researcher-requested changes identified during manual QA 
 ### Screen 04 — Joy Plot Instructions
 
 #### CR-008 — Show T0 Joy image on first Joy definition screen
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 - **Requested change:** Display `training/T0a01_J.png` together with the Joy plot definition.
 - **Acceptance criteria:** The illustrative image and its legend are visible on the definition screen.
 
 #### CR-009 — Add Back navigation to Joy instructions
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P2
 - **Requested change:** Add a `Back` button.
 - **Acceptance criteria:** `Back` returns to `How to Read the Visualisations`.
@@ -144,13 +144,13 @@ This document collects researcher-requested changes identified during manual QA 
 ### Screen 05 — Bivariate Choropleth Instructions
 
 #### CR-010 — Show T0 Choropleth image on first Choropleth definition screen
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 - **Requested change:** Display `training/T0a01_CH.png` together with the choropleth definition.
 - **Acceptance criteria:** The illustrative image and 3×3 legend are visible on the definition screen.
 
 #### CR-011 — Add Back navigation to Choropleth instructions
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P2
 - **Requested change:** Add a `Back` button.
 - **Acceptance criteria:** `Back` returns to the Joy Plot Instructions screen; from there another Back can return to `How to Read the Visualisations`.
@@ -211,4 +211,10 @@ Use the following structure for each requested change:
 
 ## QA Notes
 
-_No notes yet._
+- CR-012 metric semantics approved by the researcher before implementation:
+  `zoom_used` means the participant zoomed above 100%; `zoom_count` counts
+  wheel gestures separated by at least 500 ms; `zoom_duration_ms` sums time
+  above 100%. Pan is not stored separately. RT onset remains after the complete
+  fitted image has decoded and visibly painted.
+- Automated viewer QA covers initial 100% fit state, the 200% cap, wheel zoom,
+  drag pan, gesture grouping, zoom lifecycle, and rejection of no-op gestures.

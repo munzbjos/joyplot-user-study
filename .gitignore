@@ -1,0 +1,30 @@
+.env
+.env.*
+!.env.example
+
+# Participant/research data and local backups
+backups/
+exports/
+*.dump
+*.sql.gz
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.venv/
+
+# Frontend
+node_modules/
+frontend/dist/
+coverage/
+*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
