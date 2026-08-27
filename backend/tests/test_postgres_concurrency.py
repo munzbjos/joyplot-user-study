@@ -29,6 +29,7 @@ async def test_concurrent_blocks_and_same_session_start_are_safe():
         database_url=DATABASE_URL,
         admin_secret="postgres-test-admin-secret",
         token_pepper="postgres-test-token-pepper",
+        consent_text_version="test-v1",
         config_dir=Path(__file__).parents[2] / "config",
     )
     app = create_app(settings)
@@ -48,6 +49,12 @@ async def test_concurrent_blocks_and_same_session_start_are_safe():
             for _ in range(12):
                 created = (await client.post("/api/sessions", json={})).json()
                 auth = {"Authorization": f"Bearer {created['session_token']}"}
+                consent = await client.put(
+                    "/api/session/consent",
+                    headers=auth,
+                    json={"consented": True, "consent_version": "test-v1"},
+                )
+                assert consent.status_code == 200
                 saved = await client.put(
                     "/api/session/demographics",
                     headers=auth,
@@ -68,6 +75,12 @@ async def test_concurrent_blocks_and_same_session_start_are_safe():
 
             created = (await client.post("/api/sessions", json={})).json()
             same_auth = {"Authorization": f"Bearer {created['session_token']}"}
+            consent = await client.put(
+                "/api/session/consent",
+                headers=same_auth,
+                json={"consented": True, "consent_version": "test-v1"},
+            )
+            assert consent.status_code == 200
             await client.put(
                 "/api/session/demographics",
                 headers=same_auth,
