@@ -156,18 +156,13 @@ Button:
 
 A bivariate joy plot represents spatial values using a series of profiles.
 
-**Variable A** and **Variable B** are shown as two overlaid sets of ridges.
+**Variable A** and **Variable B** are shown as two overlaid sets of ridges. **The legend identifies the variables by colour: Variable A is blue and Variable B is red.**
 
 The **height of a ridge represents the value of the variable at that location:**
 
 **Higher ridge = higher value.**
 
 To compare values, look at the relative heights of the corresponding ridges at the location of interest.
-
-Visual key:
-
-- **Variable A — blue**
-- **Variable B — red**
 
 Button:
 
