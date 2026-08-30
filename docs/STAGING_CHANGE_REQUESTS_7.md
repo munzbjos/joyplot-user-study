@@ -17,7 +17,7 @@ This request introduces a small but methodologically important correction to the
 
 - **Screen:** Visualisation Instructions — Bivariate Joy Plot
 - **Screen:** Visualisation Instructions — Bivariate Choropleth Map
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 ### Background

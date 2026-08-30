@@ -85,4 +85,20 @@ describe('versioned consent flow', () => {
     expect(screen.getByLabelText('I preferred the bivariate choropleth map.')).toBeInTheDocument()
     expect(screen.getByLabelText('I had no preference.')).toBeInTheDocument()
   })
+
+  it('uses marker-free images only on the two definition screens', async () => {
+    storage.setSessionToken('ready-token')
+    vi.mocked(api.recoverSession).mockResolvedValue({ session_token: 'ready-token', status: 'ready', completed_trials: 0 })
+    render(<App />)
+    const user = userEvent.setup()
+
+    expect(await screen.findByRole('heading', { name: 'How to Read the Visualisations' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Continue' }))
+    expect(screen.getByRole('heading', { name: 'Bivariate Joy Plot' })).toBeInTheDocument()
+    expect(screen.getByRole('img')).toHaveAttribute('src', '/training/T0_J.png')
+
+    await user.click(screen.getByRole('button', { name: 'Continue' }))
+    expect(screen.getByRole('heading', { name: 'Bivariate Choropleth Map' })).toBeInTheDocument()
+    expect(screen.getByRole('img')).toHaveAttribute('src', '/training/T0_CH.png')
+  })
 })
