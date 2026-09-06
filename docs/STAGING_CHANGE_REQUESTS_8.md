@@ -38,7 +38,7 @@ Do not use alternative Czech terms for these two visualisation methods elsewhere
 
 ## CR8-001 — Add language selector to the first screen only
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 Add a simple language switcher to the first Welcome / Consent screen:
@@ -62,7 +62,7 @@ Requirements:
 
 ## CR8-002 — Add `ui_language`
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 Add participant/session-level field:
@@ -120,7 +120,7 @@ Include `ui_language` in the research CSV export.
 
 ## CR8-003 — Centralise participant-facing strings
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 Implement localisation in a maintainable way rather than duplicating the application.
@@ -708,7 +708,7 @@ Displayed labels:
 
 ## CR8-004 — Preserve canonical English copy
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 The existing approved English participant-facing copy must remain unchanged except for refactoring required to move strings into the localisation structure.
@@ -724,7 +724,7 @@ Acceptance requirement:
 
 ## CR8-005 — Preserve measurement behaviour
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 The localisation implementation must not alter:
@@ -753,7 +753,7 @@ Prefer locale resources bundled with the frontend build so measured-trial onset 
 
 ## CR8-006 — Bilingual QA
 
-- **Status:** OPEN
+- **Status:** DONE
 - **Priority:** P1
 
 Before production deployment:

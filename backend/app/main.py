@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .config import ExperimentConfig
 from .database import build_database
 from .models import AllocationState, Base, Participant, TrialResponse
-from .schemas import ConsentSubmission, Demographics, PreferenceSubmission, SessionCreate, TrialSubmission
+from .schemas import ConsentSubmission, Demographics, LanguageSubmission, PreferenceSubmission, SessionCreate, TrialSubmission
 from .settings import Settings
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -32,7 +32,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if not p: raise HTTPException(401, "Invalid session token")
         return p
     def state(p, completed):
-        return {"status": p.status, "assigned_version": p.assigned_version, "completed_trials": completed,
+        return {"status": p.status, "ui_language": p.ui_language, "assigned_version": p.assigned_version, "completed_trials": completed,
                 "current_trial_position": min(completed + 1, 6) if p.assigned_version and completed < 6 else None,
                 "preference": p.preference, "consent_recorded": p.consented_at is not None,
                 "consent_version": p.consent_version}
@@ -65,6 +65,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if p.status == "created": p.status = "consent_recorded"
         await session.commit()
         return {"status": p.status, "consent_recorded": True, "consent_version": p.consent_version}
+
+    @app.put("/api/session/language")
+    async def language(body: LanguageSubmission, p=Depends(participant), session: AsyncSession=Depends(db)):
+        if p.status != "created" or p.consented_at is not None:
+            raise HTTPException(409, "Language is locked after consent")
+        p.ui_language = body.ui_language
+        await session.commit()
+        return {"ui_language": p.ui_language}
 
     @app.put("/api/session/demographics")
     async def demographics(body: Demographics, p=Depends(participant), session: AsyncSession=Depends(db)):
@@ -142,7 +150,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/admin/export.csv")
     async def export(x_admin_secret: str=Header(...),session:AsyncSession=Depends(db)):
         if not hmac.compare_digest(x_admin_secret,settings.admin_secret): raise HTTPException(401,"Invalid admin secret")
-        rows=(await session.execute(select(TrialResponse,Participant).join(Participant))).all(); out=io.StringIO(); fields=["participant_id","assigned_version","consented_at","consent_version","age","gender","cartographic_background","screen_width","screen_height","viewport_width","viewport_height","device_pixel_ratio","user_agent","preference","status","trial_position","task_id","task_family","geography","pair","method","stimulus_filename","selected_answer","correct_answer","is_correct","rt_selection_ms","rt_submit_ms","answer_changes","zoom_used","zoom_count","zoom_duration_ms","max_zoom_pct","trial_restarted","restart_count","trial_started_at","submitted_at"]
+        rows=(await session.execute(select(TrialResponse,Participant).join(Participant))).all(); out=io.StringIO(); fields=["participant_id","assigned_version","ui_language","consented_at","consent_version","age","gender","cartographic_background","screen_width","screen_height","viewport_width","viewport_height","device_pixel_ratio","user_agent","preference","status","trial_position","task_id","task_family","geography","pair","method","stimulus_filename","selected_answer","correct_answer","is_correct","rt_selection_ms","rt_submit_ms","answer_changes","zoom_used","zoom_count","zoom_duration_ms","max_zoom_pct","trial_restarted","restart_count","trial_started_at","submitted_at"]
         w=csv.DictWriter(out,fields); w.writeheader()
         for r,p in rows: w.writerow({f:getattr(r,f,getattr(p,f,None)) for f in fields}|{"participant_id":str(p.id)})
         return Response(out.getvalue(),media_type="text/csv",headers={"Content-Disposition":"attachment; filename=joyplot-trials.csv"})

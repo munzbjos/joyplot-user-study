@@ -25,6 +25,31 @@ async def test_consent_validates_version_and_explicit_acceptance(client):
     assert state["consent_recorded"] is False
 
 
+async def test_ui_language_defaults_to_english_and_locks_after_consent(client):
+    created=(await client.post("/api/sessions",json={})).json()
+    assert created["ui_language"] == "en"
+    headers={"Authorization":f"Bearer {created['session_token']}"}
+    changed=await client.put("/api/session/language",headers=headers,json={"ui_language":"cs"})
+    assert changed.json() == {"ui_language":"cs"}
+    assert (await client.get("/api/session",headers=headers)).json()["ui_language"] == "cs"
+    await client.put("/api/session/consent",headers=headers,json={"consented":True,"consent_version":"test-v1"})
+    assert (await client.put("/api/session/language",headers=headers,json={"ui_language":"en"})).status_code == 409
+
+
+async def test_ui_language_validates_values_and_is_exported(client):
+    assert (await client.post("/api/sessions",json={"ui_language":"de"})).status_code == 422
+    created=(await client.post("/api/sessions",json={"ui_language":"cs"})).json()
+    h={"Authorization":f"Bearer {created['session_token']}"}
+    await client.put("/api/session/consent",headers=h,json={"consented":True,"consent_version":"test-v1"})
+    await client.put("/api/session/demographics",headers=h,json={"age":30,"gender":"woman","cartographic_background":False})
+    trial=(await client.post("/api/session/start",headers=h)).json()["trials"][0]
+    payload={"selected_answer":trial["options"][0]["id"],"rt_selection_ms":100,"rt_submit_ms":200,"answer_changes":0,"zoom_used":False,"zoom_count":0,"trial_restarted":False,"restart_count":0}
+    await client.post("/api/trials/1/response",headers=h,json=payload)
+    exported=await client.get("/api/admin/export.csv",headers={"X-Admin-Secret":"admin-test-secret"})
+    row=next(r for r in csv.DictReader(io.StringIO(exported.text)) if r["participant_id"]==created["session_id"])
+    assert row["ui_language"] == "cs"
+
+
 async def test_consent_is_idempotent_but_conflicting_reconsent_is_rejected(client):
     created=(await client.post("/api/sessions",json={})).json()
     headers={"Authorization":f"Bearer {created['session_token']}"}
@@ -90,7 +115,7 @@ async def test_full_flow_and_protected_export(client):
     assert len(rows)==6 and all(r["participant_id"]==created["session_id"] for r in rows)
     assert all(r["consent_version"]=="test-v1" and r["consented_at"] for r in rows)
     assert all(r["max_zoom_pct"]=="100.0" for r in rows)
-    assert all(key in rows[0] for key in ("screen_width","screen_height","viewport_width","viewport_height","device_pixel_ratio","user_agent"))
+    assert all(key in rows[0] for key in ("ui_language","screen_width","screen_height","viewport_width","viewport_height","device_pixel_ratio","user_agent"))
 
 async def test_metric_consistency_validation(client):
     _,h=await new_ready(client); await client.post("/api/session/start",headers=h)

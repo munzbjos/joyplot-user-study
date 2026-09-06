@@ -4,8 +4,10 @@ from pydantic import BaseModel, Field, model_validator
 
 Gender = Literal["man", "woman", "another_gender", "prefer_not_to_say"]
 Preference = Literal["joy_plot", "bivariate_choropleth", "no_preference"]
+UiLanguage = Literal["en", "cs"]
 
 class SessionCreate(BaseModel):
+    ui_language: UiLanguage = "en"
     screen_width: int | None = Field(None, ge=1, le=20000)
     screen_height: int | None = Field(None, ge=1, le=20000)
     viewport_width: int | None = Field(None, ge=1, le=20000)
@@ -43,3 +45,6 @@ class PreferenceSubmission(BaseModel): preference: Preference
 class ConsentSubmission(BaseModel):
     consented: Literal[True]
     consent_version: str = Field(min_length=1, max_length=100)
+
+class LanguageSubmission(BaseModel):
+    ui_language: UiLanguage

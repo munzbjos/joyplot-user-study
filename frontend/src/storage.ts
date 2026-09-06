@@ -1,8 +1,9 @@
-import type { TrialMetrics } from './types'
+import type { TrialMetrics, UiLanguage } from './types'
 
 const SESSION_KEY = 'joyplot-study-session'
 const PENDING_KEY = 'joyplot-study-pending-response'
 const ACTIVE_KEY = 'joyplot-study-active-trial'
+const LANGUAGE_KEY = 'joyplot-study-ui-language'
 
 export interface PendingResponse { token: string; position: number; metrics: TrialMetrics }
 export interface ActiveTrial { token: string; position: number; restartCount: number }
@@ -10,6 +11,9 @@ export const storage = {
   getSessionToken: () => localStorage.getItem(SESSION_KEY),
   setSessionToken: (token: string) => localStorage.setItem(SESSION_KEY, token),
   clearSessionToken: () => localStorage.removeItem(SESSION_KEY),
+  getLanguage: (): UiLanguage => localStorage.getItem(LANGUAGE_KEY) === 'cs' ? 'cs' : 'en',
+  setLanguage: (language: UiLanguage) => localStorage.setItem(LANGUAGE_KEY, language),
+  clearLanguage: () => localStorage.removeItem(LANGUAGE_KEY),
   getPending: (): PendingResponse | null => {
     try { return JSON.parse(localStorage.getItem(PENDING_KEY) ?? 'null') as PendingResponse | null }
     catch { localStorage.removeItem(PENDING_KEY); return null }

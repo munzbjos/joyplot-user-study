@@ -1,4 +1,5 @@
 export type Method = 'J' | 'CH'
+export type UiLanguage = 'en' | 'cs'
 export type SessionStatus = 'created' | 'consent_recorded' | 'ready' | 'in_progress' | 'preference_recorded' | 'completed'
 
 export interface Option { id: string; label: string }
@@ -22,6 +23,7 @@ export interface StudySession {
   trials?: SafeTrial[]
   participant_information_complete?: boolean
   consent_recorded?: boolean
+  ui_language: UiLanguage
 }
 export interface ParticipantInformation {
   age: number

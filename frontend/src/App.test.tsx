@@ -1,104 +1,266 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { App, Preference } from './App'
-import { api, ApiError } from './api'
-import { storage } from './storage'
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { App, Preference } from "./App";
+import { api, ApiError } from "./api";
+import { storage } from "./storage";
 
-vi.mock('./api', () => {
-  class TestApiError extends Error { constructor(message: string, readonly status?: number) { super(message) } }
+vi.mock("./api", () => {
+  class TestApiError extends Error {
+    constructor(
+      message: string,
+      readonly status?: number,
+    ) {
+      super(message);
+    }
+  }
   return {
     ApiError: TestApiError,
     api: {
-      createSession: vi.fn(), recoverSession: vi.fn(), recordConsent: vi.fn(),
-      saveParticipantInformation: vi.fn(), startMeasuredTest: vi.fn(), submitTrial: vi.fn(),
-      submitPreference: vi.fn(), complete: vi.fn(), markTrialStarted: vi.fn(),
+      createSession: vi.fn(),
+      recoverSession: vi.fn(),
+      setLanguage: vi.fn(),
+      recordConsent: vi.fn(),
+      saveParticipantInformation: vi.fn(),
+      startMeasuredTest: vi.fn(),
+      submitTrial: vi.fn(),
+      submitPreference: vi.fn(),
+      complete: vi.fn(),
+      markTrialStarted: vi.fn(),
     },
-  }
-})
+  };
+});
 
-const created = { session_token: 'session-token', status: 'created' as const, completed_trials: 0 }
+const created = {
+  session_token: "session-token",
+  status: "created" as const,
+  completed_trials: 0,
+  ui_language: "en" as const,
+};
 
-describe('versioned consent flow', () => {
+describe("versioned consent flow", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    vi.mocked(api.createSession).mockResolvedValue(created)
-  })
+    vi.clearAllMocks();
+    vi.mocked(api.createSession).mockResolvedValue(created);
+    vi.mocked(api.setLanguage).mockImplementation(
+      async (_token, ui_language) => ({ ui_language }),
+    );
+  });
 
-  it('waits for server acknowledgement before showing demographics and defaults to age 18', async () => {
-    let acknowledge!: (value: Awaited<ReturnType<typeof api.recordConsent>>) => void
-    vi.mocked(api.recordConsent).mockReturnValue(new Promise(resolve => { acknowledge = resolve }))
-    render(<App />)
-    const user = userEvent.setup()
-    await screen.findByRole('heading', { name: /visualisation of spatial data: user.study/i })
-    expect(screen.queryByRole('heading', { name: 'What data will be collected?' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Risks and benefits' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Ethics / data protection information' })).not.toBeInTheDocument()
-    await user.click(screen.getByRole('checkbox'))
-    await user.click(screen.getByRole('button', { name: 'Continue' }))
-    expect(screen.getByRole('button', { name: 'Saving consent…' })).toBeDisabled()
-    expect(screen.queryByRole('heading', { name: 'About You' })).not.toBeInTheDocument()
+  it("waits for server acknowledgement before showing demographics and defaults to age 18", async () => {
+    let acknowledge!: (
+      value: Awaited<ReturnType<typeof api.recordConsent>>,
+    ) => void;
+    vi.mocked(api.recordConsent).mockReturnValue(
+      new Promise((resolve) => {
+        acknowledge = resolve;
+      }),
+    );
+    render(<App />);
+    const user = userEvent.setup();
+    await screen.findByRole("heading", {
+      name: /visualisation of spatial data: user.study/i,
+    });
+    expect(
+      screen.queryByRole("heading", { name: "What data will be collected?" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Risks and benefits" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", {
+        name: "Ethics / data protection information",
+      }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("checkbox"));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(
+      screen.getByRole("button", { name: "Saving consent…" }),
+    ).toBeDisabled();
+    expect(
+      screen.queryByRole("heading", { name: "About You" }),
+    ).not.toBeInTheDocument();
 
-    acknowledge({ ...created, status: 'consent_recorded', consent_recorded: true })
-    expect(await screen.findByRole('heading', { name: 'About You' })).toBeInTheDocument()
-    expect(screen.getByLabelText('Age')).toHaveAttribute('min', '18')
-    await user.type(screen.getByLabelText('Age'), '17')
-    expect(screen.getByLabelText('Age')).toHaveFocus()
-    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
-    expect(api.recordConsent).toHaveBeenCalledWith('session-token', '1.0')
-  })
+    acknowledge({
+      ...created,
+      status: "consent_recorded",
+      consent_recorded: true,
+    });
+    expect(
+      await screen.findByRole("heading", { name: "About You" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Age")).toHaveAttribute("min", "18");
+    await user.type(screen.getByLabelText("Age"), "17");
+    expect(screen.getByLabelText("Age")).toHaveFocus();
+    expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
+    expect(api.recordConsent).toHaveBeenCalledWith("session-token", "1.0");
+  });
 
-  it('recovers a recorded consent directly at demographics', async () => {
-    storage.setSessionToken('existing-token')
-    vi.mocked(api.recoverSession).mockResolvedValue({ ...created, session_token: 'existing-token', status: 'consent_recorded', consent_recorded: true })
-    render(<App />)
-    expect(await screen.findByRole('heading', { name: 'About You' })).toBeInTheDocument()
-  })
+  it("recovers a recorded consent directly at demographics", async () => {
+    storage.setSessionToken("existing-token");
+    vi.mocked(api.recoverSession).mockResolvedValue({
+      ...created,
+      session_token: "existing-token",
+      status: "consent_recorded",
+      consent_recorded: true,
+    });
+    render(<App />);
+    expect(
+      await screen.findByRole("heading", { name: "About You" }),
+    ).toBeInTheDocument();
+  });
 
-  it('keeps the session token on a transient recovery error', async () => {
-    storage.setSessionToken('existing-token')
-    vi.mocked(api.recoverSession).mockRejectedValue(new ApiError('temporary', 503))
-    render(<App />)
-    expect(await screen.findByRole('heading', { name: 'Unable to continue' })).toBeInTheDocument()
-    expect(storage.getSessionToken()).toBe('existing-token')
-    expect(api.createSession).not.toHaveBeenCalled()
-    await waitFor(() => expect(api.recoverSession).toHaveBeenCalledWith('existing-token'))
-  })
+  it("defaults to English, switches immediately to Czech, and hides the selector after consent", async () => {
+    vi.mocked(api.recordConsent).mockResolvedValue({
+      ...created,
+      status: "consent_recorded",
+      consent_recorded: true,
+    });
+    render(<App />);
+    const user = userEvent.setup();
+    expect(
+      await screen.findByRole("heading", {
+        name: /Visualisation of Spatial Data/i,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "English" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await user.click(screen.getByRole("button", { name: "Čeština" }));
+    expect(
+      await screen.findByRole("heading", {
+        name: "Vizualizace prostorových dat: uživatelská studie",
+      }),
+    ).toBeInTheDocument();
+    expect(api.setLanguage).toHaveBeenCalledWith("session-token", "cs");
+    await user.click(screen.getByRole("checkbox"));
+    await user.click(screen.getByRole("button", { name: "Pokračovat" }));
+    expect(
+      await screen.findByRole("heading", { name: "O vás" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Čeština" }),
+    ).not.toBeInTheDocument();
+  });
 
-  it('shows the approved accessible researcher links after completion', async () => {
-    storage.setSessionToken('completed-token')
-    vi.mocked(api.recoverSession).mockResolvedValue({ session_token: 'completed-token', status: 'completed', completed_trials: 6 })
-    render(<App />)
-    expect(await screen.findByRole('heading', { name: 'Thank You!' })).toBeInTheDocument()
-    expect(screen.queryByText(/OPTIONAL FINAL CONTACT/)).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Josef Münzberger on LinkedIn' })).toHaveAttribute('href', 'https://www.linkedin.com/in/josef-m%C3%BCnzberger-a71a29204/')
-    expect(screen.getByRole('link', { name: 'Email Josef Münzberger' })).toHaveAttribute('href', 'mailto:josef.munzberger@fsv.cvut.cz')
-    expect(screen.getByRole('link', { name: 'Bivariate Joy Plot article' })).toHaveAttribute('href', 'https://doi.org/10.1080/00087041.2026.2715285')
-  })
+  it("recovers Czech as the locked session language", async () => {
+    storage.setSessionToken("czech-token");
+    vi.mocked(api.recoverSession).mockResolvedValue({
+      ...created,
+      session_token: "czech-token",
+      status: "consent_recorded",
+      consent_recorded: true,
+      ui_language: "cs",
+    });
+    render(<App />);
+    expect(
+      await screen.findByRole("heading", { name: "O vás" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "English" }),
+    ).not.toBeInTheDocument();
+  });
 
-  it('uses the non-evaluative final preference transition and preserves options', () => {
-    render(<Preference onSubmit={vi.fn()} />)
-    expect(screen.getByRole('heading', { name: 'Almost done!' })).toBeInTheDocument()
-    expect(screen.getByText('One last question about your overall preference.')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Which visualisation method did you prefer overall?' })).toBeInTheDocument()
-    expect(screen.getByLabelText('I preferred the bivariate joy plot.')).toBeInTheDocument()
-    expect(screen.getByLabelText('I preferred the bivariate choropleth map.')).toBeInTheDocument()
-    expect(screen.getByLabelText('I had no preference.')).toBeInTheDocument()
-  })
+  it("keeps the session token on a transient recovery error", async () => {
+    storage.setSessionToken("existing-token");
+    vi.mocked(api.recoverSession).mockRejectedValue(
+      new ApiError("temporary", 503),
+    );
+    render(<App />);
+    expect(
+      await screen.findByRole("heading", { name: "Unable to continue" }),
+    ).toBeInTheDocument();
+    expect(storage.getSessionToken()).toBe("existing-token");
+    expect(api.createSession).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(api.recoverSession).toHaveBeenCalledWith("existing-token"),
+    );
+  });
 
-  it('uses marker-free images only on the two definition screens', async () => {
-    storage.setSessionToken('ready-token')
-    vi.mocked(api.recoverSession).mockResolvedValue({ session_token: 'ready-token', status: 'ready', completed_trials: 0 })
-    render(<App />)
-    const user = userEvent.setup()
+  it("shows the approved accessible researcher links after completion", async () => {
+    storage.setSessionToken("completed-token");
+    vi.mocked(api.recoverSession).mockResolvedValue({
+      session_token: "completed-token",
+      status: "completed",
+      completed_trials: 6,
+      ui_language: "en",
+    });
+    render(<App />);
+    expect(
+      await screen.findByRole("heading", { name: "Thank You!" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/OPTIONAL FINAL CONTACT/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Josef Münzberger on LinkedIn" }),
+    ).toHaveAttribute(
+      "href",
+      "https://www.linkedin.com/in/josef-m%C3%BCnzberger-a71a29204/",
+    );
+    expect(
+      screen.getByRole("link", { name: "Email Josef Münzberger" }),
+    ).toHaveAttribute("href", "mailto:josef.munzberger@fsv.cvut.cz");
+    expect(
+      screen.getByRole("link", { name: "Bivariate Joy Plot article" }),
+    ).toHaveAttribute("href", "https://doi.org/10.1080/00087041.2026.2715285");
+  });
 
-    expect(await screen.findByRole('heading', { name: 'How to Read the Visualisations' })).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Continue' }))
-    expect(screen.getByRole('heading', { name: 'Bivariate Joy Plot' })).toBeInTheDocument()
-    expect(screen.getByRole('img')).toHaveAttribute('src', '/training/T0_J.png')
+  it("uses the non-evaluative final preference transition and preserves options", () => {
+    render(<Preference onSubmit={vi.fn()} />);
+    expect(
+      screen.getByRole("heading", { name: "Almost done!" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("One last question about your overall preference."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "Which visualisation method did you prefer overall?",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("I preferred the bivariate joy plot."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("I preferred the bivariate choropleth map."),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("I had no preference.")).toBeInTheDocument();
+  });
 
-    await user.click(screen.getByRole('button', { name: 'Continue' }))
-    expect(screen.getByRole('heading', { name: 'Bivariate Choropleth Map' })).toBeInTheDocument()
-    expect(screen.getByRole('img')).toHaveAttribute('src', '/training/T0_CH.png')
-  })
-})
+  it("uses marker-free images only on the two definition screens", async () => {
+    storage.setSessionToken("ready-token");
+    vi.mocked(api.recoverSession).mockResolvedValue({
+      session_token: "ready-token",
+      status: "ready",
+      completed_trials: 0,
+      ui_language: "en",
+    });
+    render(<App />);
+    const user = userEvent.setup();
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "How to Read the Visualisations",
+      }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(
+      screen.getByRole("heading", { name: "Bivariate Joy Plot" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("img")).toHaveAttribute(
+      "src",
+      "/training/T0_J.png",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(
+      screen.getByRole("heading", { name: "Bivariate Choropleth Map" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("img")).toHaveAttribute(
+      "src",
+      "/training/T0_CH.png",
+    );
+  });
+});
