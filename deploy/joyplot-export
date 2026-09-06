@@ -13,6 +13,7 @@ COPY (
   SELECT
     p.id::text AS participant_id,
     p.assigned_version,
+    p.ui_language,
     p.consented_at,
     p.consent_version,
     p.age,

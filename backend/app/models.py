@@ -1,7 +1,7 @@
 import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -10,10 +10,12 @@ class Base(DeclarativeBase): pass
 
 class Participant(Base):
     __tablename__ = "participants"
+    __table_args__ = (CheckConstraint("ui_language IN ('en', 'cs')", name="ck_participants_ui_language"),)
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     assigned_version: Mapped[str | None] = mapped_column(String(2))
     status: Mapped[str] = mapped_column(String(24), default="created")
+    ui_language: Mapped[str] = mapped_column(String(2), default="en", server_default="en")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

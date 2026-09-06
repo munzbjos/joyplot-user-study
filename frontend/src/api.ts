@@ -1,4 +1,4 @@
-import type { ParticipantInformation, SafeTrial, StudySession, TrialMetrics } from './types'
+import type { ParticipantInformation, SafeTrial, StudySession, TrialMetrics, UiLanguage } from './types'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
@@ -25,7 +25,7 @@ function normaliseTrials(trials: Array<SafeTrial & { stimulus_filename?: string 
 }
 
 export const api = {
-  createSession: (_sessionToken?: string) => request<StudySession>('/sessions', {
+  createSession: (_sessionToken?: string, uiLanguage: UiLanguage = 'en') => request<StudySession>('/sessions', {
     method: 'POST',
     body: JSON.stringify({
       screen_width: screen.width,
@@ -33,9 +33,13 @@ export const api = {
       viewport_width: innerWidth,
       viewport_height: innerHeight,
       device_pixel_ratio: devicePixelRatio,
+      ui_language: uiLanguage,
     }),
   }),
   recoverSession: async (token: string) => ({ session_token: token, ...await request<Omit<StudySession, 'session_token'>>('/session', { headers: auth(token) }) }),
+  setLanguage: (token: string, uiLanguage: UiLanguage) => request<{ ui_language: UiLanguage }>('/session/language', {
+    method: 'PUT', body: JSON.stringify({ ui_language: uiLanguage }), headers: auth(token),
+  }),
   recordConsent: (token: string, consentVersion: string) =>
     request<{ status: StudySession['status']; consent_recorded?: boolean }>('/session/consent', {
       method: 'PUT',
